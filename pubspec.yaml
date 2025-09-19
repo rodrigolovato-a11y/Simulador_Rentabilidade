@@ -1,0 +1,70 @@
+name: effatha_agro_simulator
+description: Effatha Agro Simulator
+publish_to: none
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.6.0
+
+dependencies:
+
+  image_picker: ^1.1.2 
+
+  google_sign_in: ^6.2.1
+
+  flutter:
+    sdk: flutter
+
+  # i18n
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+
+  # UI / layout
+  sizer: any
+  google_fonts: any
+  flutter_svg: any
+  cached_network_image: any
+
+  # Storage
+  shared_preferences: any
+  path_provider: any
+
+  # Export / Share
+  pdf: any
+  printing: any
+  share_plus: any
+
+  # Conectividade
+  connectivity_plus: any
+
+dev_dependencies:
+  flutter_launcher_icons: ^0.13.1
+  flutter_test:
+    sdk: flutter
+  flutter_lints: any
+
+flutter:
+  uses-material-design: true
+  generate: true
+
+  assets:
+    - assets/
+    - assets/images/
+
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+
+  image_path: assets/app_icon/icon.png
+
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: assets/app_icon/icon.png
+
+  android_12:
+    icon_background_color: "#FFFFFF"
+    icon_foreground: assets/app_icon/icon.png
+
+  adaptive_icon_monochrome: assets/app_icon/icon.png
+

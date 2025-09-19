@@ -1,0 +1,85 @@
+workflows:
+  android_apk_debug:
+    name: Android APK (debug split per ABI)
+    max_build_duration: 60
+    environment:
+      flutter: stable
+      java: 21
+    cache:
+      cache_paths:
+        - $HOME/.pub-cache
+        - $HOME/.gradle/caches
+        - $HOME/.gradle/wrapper
+
+    scripts:
+      - name: Print versions
+        script: |
+          flutter --version
+          java -version
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" || true
+
+      - name: Ensure Android SDK 36 (platform + build-tools 34)
+        script: |
+          set -euxo pipefail
+          SDKMAN="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKMAN" "platforms;android-36" "build-tools;34.0.0" || true
+
+      - name: Flutter clean & pub get
+        script: |
+          flutter clean
+          flutter pub get
+
+      - name: Build APK (debug split per ABI)
+        script: |
+          #!/usr/bin/env bash
+
+          # NÃO usamos -e pra não abortar antes do fallback
+          set -uox pipefail
+
+          echo "=== TRY #1: flutter build apk --debug --split-per-abi ==="
+          if ! flutter build apk --debug --split-per-abi -v; then
+            echo "[WARN] flutter build retornou erro; vamos tentar fallback com Gradle..."
+          fi
+
+          echo "=== LISTANDO outputs do Flutter ==="
+          (ls -R build/app/outputs || true)
+
+          mkdir -p build/artifacts
+
+          # Copia APKs do caminho padrão do Flutter
+          find build/app/outputs -type f -name "*.apk" -print -exec cp -v {} build/artifacts/ \; || true
+
+          # Se ainda não temos APKs, roda Gradle (fallback)
+          APK_COUNT=$(find build/artifacts -type f -name "*.apk" | wc -l | xargs)
+          if [ "$APK_COUNT" -eq "0" ]; then
+            echo "=== TRY #2: Gradle assembleDebug (fallback) ==="
+            if [ -x ./android/gradlew ]; then
+              ./android/gradlew -p android :app:assembleDebug --stacktrace --info || true
+            else
+              ./gradlew :app:assembleDebug --stacktrace --info || true
+            fi
+
+            echo "=== LISTANDO outputs do Gradle ==="
+            (ls -R android/app/build/outputs || true)
+
+            # Copia APKs gerados pelo Gradle
+            find android/app/build/outputs -type f -name "*.apk" -print -exec cp -v {} build/artifacts/ \; || true
+          fi
+
+          echo "=== FINAL artifacts ==="
+          ls -l build/artifacts || true
+
+          FINAL_COUNT=$(find build/artifacts -type f -name "*.apk" | wc -l | xargs)
+          if [ "$FINAL_COUNT" -eq "0" ]; then
+            echo "::error ::Nenhum APK encontrado após Flutter e Gradle."
+            echo "----- build/app/outputs -----"
+            (ls -R build/app/outputs || true)
+            echo "----- android/app/build/outputs -----"
+            (ls -R android/app/build/outputs || true)
+            exit 1
+          fi
+
+    artifacts:
+      - build/artifacts/*.apk
+      - android/app/build/outputs/**/*.apk
