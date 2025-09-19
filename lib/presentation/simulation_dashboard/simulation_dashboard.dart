@@ -10,6 +10,8 @@ import '../export_results_screen/export_results_screen.dart';
 import './widgets/comparison_card_widget.dart';
 import './widgets/crop_selector_widget.dart';
 import './widgets/input_card_widget.dart';
+// >>> adiciona o logo oficial
+import '../../widgets/effatha_logo_widget.dart';
 
 class SimulationDashboard extends StatefulWidget {
   SimulationDashboard({super.key});
@@ -62,7 +64,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
   void initState() {
     _loadKgPerSack();
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    // tinham 3 abas mas só existem 2 telas — corrige aqui
+    _tabController = TabController(length: 2, vsync: this);
     _calculateResults();
   }
 
@@ -281,7 +284,6 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                     children: [
                       _buildDashboardTab(),
                       _buildSettingsTab(),
-                     
                     ],
                   ),
                 ),
@@ -329,26 +331,13 @@ class _SimulationDashboardState extends State<SimulationDashboard>
       padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
       child: Row(
         children: [
-          CustomImageWidget(
-            imageUrl: 'assets/images/logo_effatha.png',
-            width: 40,
-            height: 40,
-            fit: BoxFit.cover,
-          ),
-          SizedBox(width: 3.w),
+          // >>> substitui imagem quadrada + texto por logo SVG
           Expanded(
-            child: Text(
-              'Effatha Agro Simulator',
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-                shadows: const [
-                  Shadow(
-                    color: Colors.black54,
-                    offset: Offset(0, 1),
-                    blurRadius: 2,
-                  ),
-                ],
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: EffathaLogoWidget(
+                width: 52.w,              // ajuste fino aqui (48–60.w)
+                padding: EdgeInsets.zero, // sem bordas extras
               ),
             ),
           ),
@@ -377,7 +366,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
         tabs: const [
           Tab(text: 'Dashboard'),
           Tab(text: 'Settings'),
-                  ],
+        ],
         labelColor: Colors.white,
         unselectedLabelColor: Colors.white70,
         indicatorColor: Colors.white,
@@ -901,5 +890,4 @@ class _SimulationDashboardState extends State<SimulationDashboard>
       ),
     );
   }
-
 }
