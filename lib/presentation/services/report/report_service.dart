@@ -87,7 +87,7 @@ class ReportService {
               pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
-                  pw.Text('Effatha Agro Simulator',
+                  pw.Text('Effatha - Simulador de Rentabilidade',
                       style: pw.TextStyle(
                         fontSize: 16,
                         fontWeight: pw.FontWeight.bold,
@@ -348,3 +348,4 @@ class ReportService {
     }
   }
 }
+
