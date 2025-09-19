@@ -1,0 +1,49 @@
+// android/settings.gradle
+
+pluginManagement {
+    // Descobre o caminho do SDK do Flutter (FLUTTER_HOME ou local.properties)
+    def flutterSdkPath = System.getenv("FLUTTER_HOME")
+    if (flutterSdkPath == null) {
+        def p = new Properties()
+        def lp = new File(settingsDir, "local.properties")
+        if (lp.exists()) { lp.withInputStream { p.load(it) } }
+        flutterSdkPath = p.getProperty("flutter.sdk")
+    }
+    if (flutterSdkPath == null) {
+        throw new GradleException("Flutter SDK não encontrado. Defina FLUTTER_HOME ou 'flutter.sdk' em android/local.properties.")
+    }
+
+    // Faz o Gradle “enxergar” os plugins do Flutter
+    includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
+
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+        maven { url = "https://storage.googleapis.com/download.flutter.io" }
+    }
+
+    // Versões do AGP e Kotlin Gradle Plugin
+    plugins {
+        id "com.android.application" version "8.6.0"
+        // ⚠️ Fixar em 2.1.10 (evita incompatibilidades vistas com 2.2.0)
+        id "org.jetbrains.kotlin.android" version "2.1.10"
+    }
+}
+
+plugins {
+    id "dev.flutter.flutter-plugin-loader"
+    id "com.android.application" apply false
+    id "org.jetbrains.kotlin.android" apply false
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositories {
+        google()
+        mavenCentral()
+        maven { url = "https://storage.googleapis.com/download.flutter.io" }
+    }
+}
+
+include(":app")

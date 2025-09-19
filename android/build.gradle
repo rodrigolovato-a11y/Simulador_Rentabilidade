@@ -1,0 +1,6 @@
+// android/build.gradle — intencionalmente mínimo
+// Toda a config de plugins/repos está em settings.gradle
+
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
+}

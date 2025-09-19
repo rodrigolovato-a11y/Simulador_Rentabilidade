@@ -1,0 +1,54 @@
+// android/app/build.gradle — módulo do app (Groovy)
+
+plugins {
+    id "com.android.application"
+    id "org.jetbrains.kotlin.android"
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+android {
+    namespace "com.effatha_agro_simulator.app"
+    compileSdk 36
+
+    defaultConfig {
+        applicationId "com.effatha_agro_simulator.app"
+        minSdk 21
+        targetSdk 36
+
+        versionCode 1
+        versionName "1.0"
+
+        multiDexEnabled true
+    }
+
+    buildTypes {
+        debug {
+            // NÃO use shrinkResources sem minifyEnabled
+            minifyEnabled false
+            shrinkResources false
+        }
+        release {
+            // Para usar shrinkResources é obrigatório habilitar minify (R8)
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
+                          'proguard-rules.pro'
+        }
+    }
+
+    // Java/Kotlin 17 recomendado com AGP 8.x
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+}
+
+dependencies {
+    // NÃO adicione kotlin-stdlib manualmente (o plugin injeta a versão correta)
+    implementation "androidx.core:core-ktx:1.16.0"
+    implementation "androidx.appcompat:appcompat:1.6.1"
+    implementation "com.google.android.material:material:1.11.0"
+}
