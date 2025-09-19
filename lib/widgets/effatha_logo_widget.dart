@@ -66,8 +66,8 @@ class EffathaLogoWidget extends StatelessWidget {
     final double maxSize = isLarge ? 220.0 : 120.0;
     final double targetSize = baseSizeW > maxSize ? maxSize : baseSizeW;
 
-    final double logoWidth = width ?? (showContainer ? targetSize : 24.0);
-    final double logoHeight = height ?? (showContainer ? targetSize : 24.0);
+    final double logoWidth  = width  ?? targetSize;    // antes fixava 24.0
+    final double logoHeight = height ?? targetSize;    // antes fixava 24.0
 
     // Single asset path (ajuste o nome se necessário)
     final String assetPath = 'assets/images/logo_effatha_official.svg';
