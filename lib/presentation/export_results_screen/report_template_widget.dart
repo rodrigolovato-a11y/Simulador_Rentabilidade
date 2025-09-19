@@ -69,10 +69,10 @@ class ReportTemplateWidget extends StatelessWidget {
             const SizedBox(height: 8),
 
             // Tabela de duas colunas (igual ao Dashboard/PDF)
-            _row2('Investimento Total (R/$)', _fmtMoney(tCosts), _fmtMoney(eCosts)),
+            _row2('Investimento Total (R\$)', _fmtMoney(tCosts), _fmtMoney(eCosts)),
             _row2('Produção Total', _prodKgToSc(tProdKg), _prodKgToSc(eProdKg)),
-            _row2('Faturamento Total (R/$)', _fmtMoney(tRevenue), _fmtMoney(eRevenue)),
-            _row2('Rentabilidade Total (R/$)', _fmtMoney(tProfit), _fmtMoney(eProfit)),
+            _row2('Faturamento Total (R\$)', _fmtMoney(tRevenue), _fmtMoney(eRevenue)),
+            _row2('Rentabilidade Total (R\$)', _fmtMoney(tProfit), _fmtMoney(eProfit)),
             _row2('Rentabilidade Total (%)',
                 _fmtPercent(tPerc), _fmtPercent(ePerc)),
 
@@ -103,7 +103,7 @@ class ReportTemplateWidget extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: _tile('Diferença (R/$)', _fmtMoney(diffMoney)),
+                          child: _tile('Diferença (R\$)', _fmtMoney(diffMoney)),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
@@ -177,5 +177,6 @@ class ReportTemplateWidget extends StatelessWidget {
     );
   }
 }
+
 
 
