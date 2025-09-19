@@ -62,8 +62,8 @@ class EffathaLogoWidget extends StatelessWidget {
         (padding.horizontal >= 40.0) || (padding.vertical >= 40.0);
 
     // Base responsive size using Sizer
-    final double baseSizeW = isLarge ? 28.w : 20.w;
-    final double maxSize = isLarge ? 220.0 : 120.0;
+    final double baseSizeW = isLarge ? 60.w : 36.w; // maior no consentimento
+    final double maxSize   = isLarge ? 320.0 : 180.0;
     final double targetSize = baseSizeW > maxSize ? maxSize : baseSizeW;
 
     final double logoWidth  = width  ?? targetSize;    // antes fixava 24.0
@@ -76,8 +76,8 @@ class EffathaLogoWidget extends StatelessWidget {
       constraints: BoxConstraints(
         maxWidth: logoWidth,
         maxHeight: logoHeight,
-        minWidth: showContainer ? 60 : 20,
-        minHeight: showContainer ? 60 : 20,
+        minWidth: 40,
+        minHeight: 40,
       ),
       child: assetPath.toLowerCase().endsWith('.svg')
           ? SvgPicture.asset(
