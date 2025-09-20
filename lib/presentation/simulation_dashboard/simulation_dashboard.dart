@@ -328,7 +328,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
 
   Widget _buildAppBar(ThemeData theme, bool isDark) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
+      padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.2.h),
       child: Row(
         children: [
           // >>> substitui imagem quadrada + texto por logo SVG
