@@ -91,5 +91,13 @@
   "noDataForExport": "Sem dados para exportação.",
   "sharePdf": "Compartilhar PDF",
   "shareAsPng": "Compartilhar como PNG",
-  "pngExportFailed": "Falha ao exportar PNG"
+  "pngExportFailed": "Falha ao exportar PNG",
+  "exportReportTitle": "Exportar Relatório",
+  "effathaTitle": "Effatha",
+  "notesSectionTitle": "Observações",
+  "dateTimeLabel": "Data/Hora",
+  "reportGeneratedAutomatically": "Relatório gerado automaticamente pelo simulador.",
+  "valuesCurrencyHint": "Valores expressos em",
+  "sackWeightKg": "Peso por saca (kg)",
+  "reportShareText": "Relatório de Simulação Effatha"
 }
