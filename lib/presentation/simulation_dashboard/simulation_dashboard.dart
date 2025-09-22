@@ -356,7 +356,7 @@ floatingActionButton: _tabController.index == 0
             child: Align(
               alignment: Alignment.centerLeft,
               child: EffathaLogoWidget(
-                width: 52.w,
+                width: 46.w,
                 padding: EdgeInsets.zero,
               ),
             ),
