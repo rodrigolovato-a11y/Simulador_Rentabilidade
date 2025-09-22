@@ -279,37 +279,71 @@ class _SimulationDashboardState extends State<SimulationDashboard>
           ),
         ),
       ),
-      floatingActionButton: _tabController.index == 0
-          ? FloatingActionButton.extended(
-              onPressed: () {
-                Navigator.pushNamed(
-                  context,
-                  '/export-results-screen',
-                  arguments: SimulationExportArgs(
-                    traditional: _traditionalResults,
-                    effatha: _effathaResults,
-                    cropKey: _selectedCrop,
-                    areaUnit: _areaUnit,
-                    productivityUnit: _productivityUnit,
-                    kgPerSack: _kgPerSackWeight,
-                  ),
-                );
+floatingActionButton: _tabController.index == 0
+    ? FloatingActionButton.extended(
+        onPressed: () {
+          final loc = AppLocalizations.of(context)!;
+
+          Navigator.pushNamed(
+            context,
+            '/export-results-screen',
+            arguments: SimulationExportArgs(
+              traditional: _traditionalResults,
+              effatha: _effathaResults,
+              cropKey: _selectedCrop,
+              areaUnit: _areaUnit,
+              productivityUnit: _productivityUnit,
+              kgPerSack: _kgPerSackWeight,
+              // >>> envia parâmetros de entrada p/ o PDF
+              inputs: {
+                'area': {'value': _area, 'unit': _areaUnit},
+                'historicalProductivity': {
+                  'value': _historicalProductivity,
+                  'unit': _productivityUnit,
+                },
+                'historicalCosts': {
+                  'value': _historicalCosts,
+                  'unit': _costUnit,
+                },
+                'cropPrice': {
+                  'value': _cropPrice,
+                  'unit': _priceUnit,
+                },
+                'effathaInvestment': {
+                  'value': _effathaInvestment,
+                  'unit': _investmentUnit,
+                },
+                'additionalProductivity': {
+                  'value': _additionalProductivity,
+                  'unit': _additionalProductivityUnit,
+                },
+                'areaUnit': _areaUnit,
+                'productivityUnit': _productivityUnit,
+                'costUnit': _costUnit,
+                'priceUnit': _priceUnit,
+                'investmentUnit': _investmentUnit,
+                'additionalProductivityUnit': _additionalProductivityUnit,
+                'kgPerSack': _kgPerSackWeight,
               },
-              icon: CustomIconWidget(
-                iconName: 'file_download',
-                color: AppTheme.onSecondaryLight,
-                size: 20,
-              ),
-              label: Text(
-                AppLocalizations.of(context)!.export, // i18n
-                style: theme.textTheme.labelLarge?.copyWith(
-                  color: AppTheme.onSecondaryLight,
-                ),
-              ),
-              backgroundColor:
-                  isDark ? AppTheme.secondaryDark : AppTheme.secondaryLight,
-            )
-          : null,
+            ),
+          );
+        },
+        icon: CustomIconWidget(
+          iconName: 'file_download',
+          color: AppTheme.onSecondaryLight,
+          size: 20,
+        ),
+        label: Text(
+          AppLocalizations.of(context)!.export,
+          style: theme.textTheme.labelLarge?.copyWith(
+            color: AppTheme.onSecondaryLight,
+          ),
+        ),
+        backgroundColor:
+            isDark ? AppTheme.secondaryDark : AppTheme.secondaryLight,
+      )
+    : null,
+
     );
   }
 
