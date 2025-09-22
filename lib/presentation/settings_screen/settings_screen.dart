@@ -15,6 +15,7 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  // ===== Helpers =====
   Locale _parseLocaleTag(String tag) {
     final parts = tag.split(RegExp(r'[-_]'));
     if (parts.isEmpty) return const Locale('en');
@@ -22,7 +23,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Locale(parts[0], parts[1]);
   }
 
-  // Estado
+  Future<SharedPreferences> get _prefs async =>
+      SharedPreferences.getInstance();
+
+  // ===== Estado =====
   bool _isLoading = true;
 
   // Preferências
@@ -39,7 +43,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _loadPrefs() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await _prefs;
       setState(() {
         _selectedAreaUnit =
             prefs.getString('selected_area_unit') ?? 'hectares';
@@ -49,23 +53,71 @@ class _SettingsScreenState extends State<SettingsScreen> {
             prefs.getDouble('kg_per_sack_weight') ?? 60.0;
         _isLoading = false;
       });
-    } catch (e) {
-      // Em caso de erro, usa defaults e libera UI
-      setState(() {
-        _isLoading = false;
-      });
+    } catch (_) {
+      setState(() => _isLoading = false);
     }
   }
 
-  Future<void> _savePrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('selected_area_unit', _selectedAreaUnit);
-    await prefs.setString('selected_language', _selectedLanguage);
-    await prefs.setDouble('kg_per_sack_weight', _kgPerSackWeight);
+  // ===== Persistência (unitária) =====
+  Future<void> _saveAreaUnit(String unit) async {
+    final prefs = await _prefs;
+    await prefs.setString('selected_area_unit', unit);
   }
 
+  Future<void> _saveLanguage(String tag) async {
+    final prefs = await _prefs;
+    await prefs.setString('selected_language', tag);
+  }
+
+  Future<void> _saveKgPerSack(double kg) async {
+    final prefs = await _prefs;
+    await prefs.setDouble('kg_per_sack_weight', kg);
+  }
+
+  // ===== Ações =====
   void _handleLogout() {
     Navigator.pushNamedAndRemoveUntil(context, '/login-screen', (_) => false);
+  }
+
+  Future<void> _onLanguageChanged(String? value) async {
+    final newTag = value ?? 'pt_BR';
+    setState(() => _selectedLanguage = newTag);
+
+    // 1) persiste
+    await _saveLanguage(newTag);
+
+    // 2) aplica imediatamente no app
+    final locale = _parseLocaleTag(newTag);
+    // Se seu LocaleController expõe outro método, ajuste aqui.
+    LocaleController.of(context).setLocale(locale);
+
+    // 3) feedback
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(AppLocalizations.of(context)!.saved),
+        duration: const Duration(milliseconds: 900),
+      ),
+    );
+  }
+
+  Future<void> _onAreaUnitChanged(String? value) async {
+    final newUnit = value ?? 'hectares';
+    setState(() => _selectedAreaUnit = newUnit);
+    await _saveAreaUnit(newUnit);
+  }
+
+  Future<void> _onSaveAll() async {
+    await _saveAreaUnit(_selectedAreaUnit);
+    await _saveLanguage(_selectedLanguage);
+    await _saveKgPerSack(_kgPerSackWeight);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(AppLocalizations.of(context)!.saved),
+        duration: const Duration(milliseconds: 900),
+      ),
+    );
   }
 
   // ===== UI =====
@@ -87,18 +139,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         title: Text(AppLocalizations.of(context)!.applicationSettings),
         actions: [
           IconButton(
-            onPressed: () async {
-              await _savePrefs();
-              if (!mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(AppLocalizations.of(context)!.advancedSettings),
-                  duration: const Duration(seconds: 1),
-                ),
-              );
-            },
+            onPressed: _onSaveAll,
             icon: const Icon(Icons.save),
-            tooltip: 'Salvar',
+            tooltip: AppLocalizations.of(context)!.save,
           ),
         ],
       ),
@@ -117,11 +160,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             SizedBox(height: 1.h),
             DropdownButtonFormField<String>(
               value: _selectedAreaUnit,
-              onChanged: (value) {
-                setState(() {
-                  _selectedAreaUnit = value ?? 'hectares';
-                });
-              },
+              onChanged: _onAreaUnitChanged,
               decoration: InputDecoration(
                 labelText: AppLocalizations.of(context)!.areaUnit,
                 border: const OutlineInputBorder(),
@@ -146,7 +185,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             // ===== Idioma =====
             Text(
-              // Pode criar uma chave específica tipo "languageSettings" se quiser
               'Idioma',
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w600,
@@ -155,11 +193,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             SizedBox(height: 1.h),
             DropdownButtonFormField<String>(
               value: _selectedLanguage,
-              onChanged: (value) {
-                setState(() {
-                  _selectedLanguage = value ?? 'pt_BR';
-                });
-              },
+              onChanged: _onLanguageChanged,
               decoration: const InputDecoration(
                 labelText: 'Idioma',
                 border: OutlineInputBorder(),
@@ -190,12 +224,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 labelText: 'kg',
                 border: OutlineInputBorder(),
               ),
-              onChanged: (v) {
+              onChanged: (v) async {
                 final parsed = double.tryParse(v.replaceAll(',', '.'));
                 if (parsed != null && parsed > 0) {
-                  setState(() {
-                    _kgPerSackWeight = parsed;
-                  });
+                  setState(() => _kgPerSackWeight = parsed);
+                  // salva “on the fly”
+                  await _saveKgPerSack(parsed);
                 }
               },
             ),
@@ -206,18 +240,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Row(
               children: [
                 ElevatedButton.icon(
-                  onPressed: () async {
-                    await _savePrefs();
-                    if (!mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Preferências salvas'),
-                        duration: Duration(seconds: 1),
-                      ),
-                    );
-                  },
+                  onPressed: _onSaveAll,
                   icon: const Icon(Icons.save),
-                  label: const Text('Salvar'),
+                  label: Text(AppLocalizations.of(context)!.save),
                 ),
                 const SizedBox(width: 12),
                 OutlinedButton.icon(
