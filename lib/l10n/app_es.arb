@@ -75,4 +75,19 @@
   "language_fr": "Francés",
   "language_de": "Alemán",
   "apply": "Aplicar"
+  "dashboard": "Panel",
+  "settings": "Ajustes",
+  "results": "Resultados",
+  "profitability": "Rentabilidad",
+  "difference": "Diferencia",
+  "additionalProfitability": "Ganancia adicional (%)",
+  "farmStandard": "Estándar de la finca",
+  "crop": "Cultivo",
+  "cropSoy": "Soja",
+  "cropCorn": "Maíz",
+  "cropCotton": "Algodón",
+  "cropSugarcane": "Caña de azúcar",
+  "cropWheat": "Trigo",
+  "cropCoffee": "Café",
+  "cropOrange": "Naranja"
 }
