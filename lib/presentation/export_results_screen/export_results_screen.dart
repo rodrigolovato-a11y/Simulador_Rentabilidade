@@ -5,12 +5,12 @@ import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../services/report/report_service.dart';
 import 'report_template_widget.dart';
 import '../services/report/report_capture.dart';
-import 'package:effatha_agro_simulator/l10n/app_localizations.dart';
 
-/// Mantido por compatibilidade com a navegação tipada
+/// Navegação tipada
 class SimulationExportArgs {
   final Map<String, dynamic> traditional;
   final Map<String, dynamic> effatha;
@@ -19,6 +19,19 @@ class SimulationExportArgs {
   final String productivityUnit;  // 'kg/ha' | 't/ha' | 'sc/ha' | 'sc/acre'
   final double kgPerSack;
 
+  /// Parâmetros crus para serem formatados no PDF (opcional).
+  /// Exemplo:
+  /// {
+  ///   'area': {'value': '120', 'unit': 'hectares'},
+  ///   'historicalProductivity': {'value': '55', 'unit': 'sc/ha'},
+  ///   'historicalCosts': {'value': '800', 'unit': r'$/ha'},
+  ///   'cropPrice': {'value': '130', 'unit': r'$/sc'},
+  ///   'effathaInvestment': {'value': '50', 'unit': r'$/ha'},
+  ///   'additionalProductivity': {'value': '5', 'unit': 'sc/ha'},
+  ///   'kgPerSack': 60.0
+  /// }
+  final Map<String, dynamic>? inputs;
+
   const SimulationExportArgs({
     required this.traditional,
     required this.effatha,
@@ -26,6 +39,7 @@ class SimulationExportArgs {
     required this.areaUnit,
     required this.productivityUnit,
     required this.kgPerSack,
+    this.inputs,
   });
 }
 
@@ -60,7 +74,7 @@ class _ExportResultsScreenState extends State<ExportResultsScreen> {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
 
-    // Aceita SimulationExportArgs OU Map<String, dynamic>
+    // Aceita SimulationExportArgs OU Map<String, dynamic> (retrocompat.)
     final raw = ModalRoute.of(context)?.settings.arguments;
 
     Map<String, dynamic>? traditional;
@@ -69,6 +83,7 @@ class _ExportResultsScreenState extends State<ExportResultsScreen> {
     String areaUnit = 'hectares';
     String productivityUnit = 'sc/ha';
     double kgPerSack = _kgPerSackFallback;
+    Map<String, dynamic>? inputs;
 
     if (raw is SimulationExportArgs) {
       traditional = raw.traditional;
@@ -77,47 +92,125 @@ class _ExportResultsScreenState extends State<ExportResultsScreen> {
       areaUnit = raw.areaUnit;
       productivityUnit = raw.productivityUnit;
       kgPerSack = raw.kgPerSack;
+      inputs = raw.inputs;
     } else if (raw is Map<String, dynamic>) {
       traditional = raw['traditional'] as Map<String, dynamic>?;
       effatha = raw['effatha'] as Map<String, dynamic>?;
       cropKey = (raw['cropKey'] as String?) ?? cropKey;
 
-      final inputs = raw['inputs'] as Map<String, dynamic>?;
-      if (inputs != null) {
-        areaUnit = (inputs['areaUnit'] as String?) ?? areaUnit;
-        productivityUnit = (inputs['productivityUnit'] as String?) ?? productivityUnit;
-        final k = inputs['kgPerSack'];
+      final inMap = raw['inputs'] as Map<String, dynamic>?;
+      if (inMap != null) {
+        inputs = inMap;
+        areaUnit = (inMap['areaUnit'] as String?) ?? areaUnit;
+        productivityUnit = (inMap['productivityUnit'] as String?) ?? productivityUnit;
+        final k = inMap['kgPerSack'];
         if (k is num && k > 0) kgPerSack = k.toDouble();
       }
     }
 
     if (traditional == null || effatha == null) {
       return Scaffold(
-        appBar: AppBar(title: Text(loc.exportReport)),
+        appBar: AppBar(title: Text(loc.exportReportTitle)),
         body: Center(child: Text(loc.noDataForExport)),
       );
     }
 
-    // ===== rótulos traduzidos para o PDF =====
+    // ===== Labels localizados para o PDF =====
+    // Usa chaves que você já tem no l10n.
     final labels = ReportLabels(
-      reportTitle: loc.exportReport,
-      sectionResults: loc.results,
-      traditionalTitle: loc.traditionalFarming,
-      effathaTitle: loc.comEffatha,
-      totalInvestment: loc.totalInvestment,
-      totalRevenue: loc.totalRevenue,
-      totalProduction: loc.totalProduction,
-      totalProfit: loc.totalProfit,
-      totalProfitPercent: loc.totalProfitPercent,
-      profitability: loc.profitability,
-      difference: loc.difference,
-      additionalProfitability: loc.additionalProfitability,
-      farmStandard: loc.farmStandard,
+      reportTitle: loc.exportReportTitle,                 // "Exportar Relatório" / equivalente
+      sectionResults: loc.results,                        // "Resultados"
+      traditionalTitle: loc.farmStandard,                 // "Padrão Fazenda"
+      effathaTitle: 'Effatha',                            // normalmente fixo
+      totalInvestment: loc.totalInvestment,               // "Investimento Total"
+      totalRevenue: loc.totalRevenue,                     // "Receita Total"
+      totalProduction: loc.totalProduction,               // "Produção Total"
+      totalProfit: loc.totalProfit,                       // "Lucro Total"
+      totalProfitPercent: loc.totalProfitPercent,         // "Rentabilidade Total (%)"
+      profitability: loc.profitability,                   // "Rentabilidade"
+      difference: loc.difference,                         // "Diferença"
+      additionalProfitability: loc.additionalProfitability, // "Lucro adicional (%)"
+      farmStandard: loc.farmStandard,                     // rótulo da coluna esquerda
       currencySymbol: r'$',
-      cropLabel: _cropNameForPdf(loc, cropKey),
-      areaUnitLabel: _areaUnitLabel(loc, areaUnit),
-      productivityUnitLabel: productivityUnit,
+      cropLabel: _localizedCrop(cropKey, loc),
+      areaUnitLabel: _localizedAreaUnit(areaUnit, loc),
+      productivityUnitLabel: productivityUnit,            // exibe como está (sc/ha etc.)
+      inputsSectionTitle: loc.inputParameters,            // "Parâmetros de entrada"
+      notesSectionTitle: loc.notesSectionTitle,           // adicione essa chave no arb, ex.: "Observações"
+      dateTimeLabel: loc.dateTimeLabel,                   // adicione essa chave, ex.: "Data/Hora"
     );
+
+    // ===== Parâmetros de entrada (formatados para exibir no PDF) =====
+    final inputFields = <ReportField>[];
+    if (inputs != null) {
+      String fmt(String keyValue, String keyUnit, {String? fallbackLabel}) {
+        final v = (inputs![keyValue] ?? {})['value']?.toString() ?? '';
+        final u = (inputs![keyUnit] ?? {})['unit']?.toString() ??
+            (inputs![keyUnit]?.toString() ?? '');
+        return '$v ${u.isNotEmpty ? u : ''}'.trim();
+      }
+
+      // Como as estruturas de 'inputs' podem variar, trato defensivamente:
+      String valUnit(String valueKey, String unitKey) {
+        final v = inputs![valueKey]?['value']?.toString() ??
+            inputs![valueKey]?.toString() ??
+            '';
+        final u = inputs![valueKey]?['unit']?.toString() ??
+            inputs![unitKey]?.toString() ??
+            '';
+        return (v.isEmpty && u.isEmpty) ? '' : '$v ${u.isNotEmpty ? u : ''}'.trim();
+      }
+
+      // Área
+      if (inputs.containsKey('area')) {
+        inputFields.add(ReportField(loc.area, valUnit('area', 'areaUnit')));
+      }
+      // Produtividade histórica
+      if (inputs.containsKey('historicalProductivity')) {
+        inputFields.add(ReportField(
+          loc.historicalProductivity,
+          valUnit('historicalProductivity', 'productivityUnit'),
+        ));
+      }
+      // Custos históricos
+      if (inputs.containsKey('historicalCosts')) {
+        inputFields.add(ReportField(
+          loc.historicalCosts,
+          valUnit('historicalCosts', 'costUnit'),
+        ));
+      }
+      // Preço da cultura
+      if (inputs.containsKey('cropPrice')) {
+        inputFields.add(ReportField(
+          loc.cropPrice,
+          valUnit('cropPrice', 'priceUnit'),
+        ));
+      }
+      // Investimento Effatha
+      if (inputs.containsKey('effathaInvestment')) {
+        inputFields.add(ReportField(
+          loc.effathaInvestmentCost,
+          valUnit('effathaInvestment', 'investmentUnit'),
+        ));
+      }
+      // Produtividade adicional
+      if (inputs.containsKey('additionalProductivity')) {
+        inputFields.add(ReportField(
+          loc.additionalProductivity,
+          valUnit('additionalProductivity', 'additionalProductivityUnit'),
+        ));
+      }
+      // Peso por saca
+      final k = inputs['kgPerSack'];
+      final kStr = (k is num && k > 0) ? '${k.toString()} kg' : '${kgPerSack.toString()} kg';
+      inputFields.add(ReportField(loc.sackWeightKg, kStr));
+    }
+
+    // ===== Observações =====
+    final notes = <ReportField>[
+      ReportField(loc.reportGeneratedAutomatically, ''), // adicione no arb (ex.: "Relatório gerado automaticamente pelo simulador.")
+      ReportField(loc.valuesCurrencyHint, labels.currencySymbol), // adicione no arb (ex.: "Valores expressos em")
+    ];
 
     final reportData = SimulationReportData(
       traditional: traditional,
@@ -127,11 +220,13 @@ class _ExportResultsScreenState extends State<ExportResultsScreen> {
       productivityUnit: productivityUnit,
       kgPerSack: kgPerSack,
       labels: labels,
+      inputs: inputFields,
+      notes: notes,
     );
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(loc.exportReport),
+        title: Text(loc.exportReportTitle),
         actions: [
           IconButton(
             tooltip: loc.shareAsPng,
@@ -142,7 +237,7 @@ class _ExportResultsScreenState extends State<ExportResultsScreen> {
                 );
                 await Share.shareXFiles(
                   [XFile(file.path)],
-                  text: 'Effatha Simulation Report',
+                  text: loc.reportShareText,
                 );
               } catch (e) {
                 if (!mounted) return;
@@ -157,6 +252,7 @@ class _ExportResultsScreenState extends State<ExportResultsScreen> {
       ),
       body: Column(
         children: [
+          // Preview do PDF
           Expanded(
             child: PdfPreview(
               canChangeOrientation: false,
@@ -166,7 +262,7 @@ class _ExportResultsScreenState extends State<ExportResultsScreen> {
             ),
           ),
 
-          // Prévia PNG (o conteúdo é um widget Flutter e já pega o idioma atual)
+          // Prévia PNG / Área de captura (mantida)
           Container(
             height: 340,
             width: double.infinity,
@@ -196,8 +292,8 @@ class _ExportResultsScreenState extends State<ExportResultsScreen> {
     );
   }
 
-  String _cropNameForPdf(AppLocalizations loc, String key) {
-    switch (key) {
+  String _localizedCrop(String cropKey, AppLocalizations loc) {
+    switch (cropKey) {
       case 'soy':
         return loc.cropSoy;
       case 'corn':
@@ -213,11 +309,11 @@ class _ExportResultsScreenState extends State<ExportResultsScreen> {
       case 'orange':
         return loc.cropOrange;
       default:
-        return key;
+        return cropKey;
     }
   }
 
-  String _areaUnitLabel(AppLocalizations loc, String unit) {
+  String _localizedAreaUnit(String unit, AppLocalizations loc) {
     switch (unit) {
       case 'hectares':
         return loc.hectares;
@@ -231,14 +327,12 @@ class _ExportResultsScreenState extends State<ExportResultsScreen> {
   }
 }
 
-/// Wrapper só para ler os mesmos arguments que a tela recebeu e
-/// montar o ReportTemplateWidget sem repetir parsing.
+/// Apenas para a visualização PNG da página (mantido para compatibilidade)
 class _ReportPreviewShell extends StatelessWidget {
   const _ReportPreviewShell();
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
     final raw = ModalRoute.of(context)?.settings.arguments;
 
     Map<String, dynamic>? traditional;
