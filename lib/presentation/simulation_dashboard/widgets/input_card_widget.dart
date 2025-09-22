@@ -1,5 +1,5 @@
+// lib/presentation/simulation_dashboard/widgets/input_card_widget.dart
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -13,6 +13,7 @@ import 'package:flutter/services.dart';
 /// - Sem `const` em widgets que dependem de valores dinâmicos.
 /// - Debounce de 250ms no onChanged para evitar rebuilds a cada dígito.
 /// - `units` + `onUnitChanged` são opcionais. Quando presentes, mostra um seletor.
+/// - `unitLabels` (opcional): mapa de rótulos de exibição -> mantém os valores internos estáveis.
 class InputCardWidget extends StatefulWidget {
   const InputCardWidget({
     super.key,
@@ -26,6 +27,7 @@ class InputCardWidget extends StatefulWidget {
     this.inputFormatters,
     this.keyboardType,
     this.suffixWidget,
+    this.unitLabels, // <- NOVO
   });
 
   final String title;
@@ -35,12 +37,19 @@ class InputCardWidget extends StatefulWidget {
   final String hintText;
 
   /// Unidade selecionada (texto exibido à direita, ex.: "sc/ha")
+  /// Este é o **valor interno** (ex.: 'hectares', 'acres', 'sc/ha' etc.)
   final String unit;
 
   /// Lista de unidades disponíveis (se null/empty, não mostra seletor)
+  /// Estes são os **valores internos** estáveis (chaves).
   final List<String>? units;
 
-  /// Callback quando a unidade muda
+  /// Mapa opcional "valor interno" -> "rótulo de exibição"
+  /// Ex.: {'hectares': 'Hectares', 'acres': 'Acres'}
+  /// Se omitido, o dropdown exibe o próprio valor interno.
+  final Map<String, String>? unitLabels;
+
+  /// Callback quando a unidade muda (retorna **valor interno**)
   final ValueChanged<String>? onUnitChanged;
 
   /// Callback do valor digitado (com debounce)
@@ -126,14 +135,16 @@ class _InputCardWidgetState extends State<InputCardWidget> {
               Expanded(
                 child: TextField(
                   controller: _controller,
-                  keyboardType: widget.keyboardType ?? const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: widget.keyboardType ??
+                      const TextInputType.numberWithOptions(decimal: true),
                   inputFormatters: widget.inputFormatters,
                   onChanged: _onChangedWithDebounce,
                   decoration: InputDecoration(
                     hintText: widget.hintText,
                     border: const OutlineInputBorder(),
                     isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                   ),
                 ),
               ),
@@ -145,6 +156,7 @@ class _InputCardWidgetState extends State<InputCardWidget> {
                 _UnitSelector(
                   currentUnit: widget.unit,
                   units: widget.units!,
+                  displayLabels: widget.unitLabels, // <- NOVO
                   onChanged: widget.onUnitChanged,
                 ),
 
@@ -166,15 +178,29 @@ class _UnitSelector extends StatelessWidget {
     required this.currentUnit,
     required this.units,
     required this.onChanged,
+    this.displayLabels, // <- NOVO
   });
 
   final String currentUnit;
   final List<String> units;
   final ValueChanged<String>? onChanged;
 
+  /// Mapa "valor interno" -> "rótulo exibido"
+  final Map<String, String>? displayLabels;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
+    // Usa o rótulo traduzido se existir; senão exibe a própria chave
+    String _labelFor(String key) =>
+        (displayLabels != null && displayLabels!.containsKey(key))
+            ? (displayLabels![key] ?? key)
+            : key;
+
+    final String? value = units.contains(currentUnit)
+        ? currentUnit
+        : (units.isNotEmpty ? units.first : null);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -185,16 +211,18 @@ class _UnitSelector extends StatelessWidget {
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
-          value: units.contains(currentUnit) ? currentUnit : (units.isNotEmpty ? units.first : null),
+          value: value,
           isDense: true,
           onChanged: (v) {
-            if (v != null && onChanged != null) onChanged!(v);
+            if (v != null && onChanged != null) onChanged!(v); // retorna a CHAVE
           },
           items: units
-              .map((u) => DropdownMenuItem<String>(
-                    value: u,
-                    child: Text(u),
-                  ))
+              .map(
+                (u) => DropdownMenuItem<String>(
+                  value: u,       // mantém valor interno
+                  child: Text(_labelFor(u)), // mostra rótulo traduzido
+                ),
+              )
               .toList(),
         ),
       ),
