@@ -397,81 +397,47 @@ floatingActionButton: _tabController.index == 0
     );
   }
 
-  Widget _buildDashboardTab() {
-    final loc = AppLocalizations.of(context)!;
+Widget _buildDashboardTab() {
+  final loc = AppLocalizations.of(context)!;
 
-    return RefreshIndicator(
-      onRefresh: () async {
-        await Future.delayed(const Duration(seconds: 1));
-        _calculateResults();
-      },
-      child: SingleChildScrollView(
-        padding: EdgeInsets.all(4.w),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CropSelectorWidget(
-              selectedCrop: _selectedCrop,
-              onCropChanged: (crop) {
-                setState(() {
-                  _selectedCrop = crop;
-                });
-              },
-            ),
-            SizedBox(height: 3.h),
-            Text(
-              loc.comparisonOverview,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                    shadows: const [
-                      Shadow(
-                        color: Colors.black54,
-                        offset: Offset(0, 1),
-                        blurRadius: 2,
-                      ),
-                    ],
-                  ),
-            ),
-            SizedBox(height: 2.h),
-            Row(
-              children: [
-                Expanded(
-                  child: ComparisonCardWidget(
-                    title: loc.traditionalFarming,
-                    value:
-                        _traditionalResults['profitabilityPercent'] ?? '0%',
-                    subtitle: loc.currentProfitability,
-                  ),
+  return RefreshIndicator(
+    onRefresh: () async {
+      await Future.delayed(const Duration(seconds: 1));
+      _calculateResults();
+    },
+    child: SingleChildScrollView(
+      padding: EdgeInsets.all(4.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CropSelectorWidget(
+            selectedCrop: _selectedCrop,
+            onCropChanged: (crop) {
+              setState(() {
+                _selectedCrop = crop;
+              });
+            },
+          ),
+          SizedBox(height: 3.h),
+
+          // ---- bloco "Visão geral da comparação" removido ----
+
+          Text(
+            loc.inputParameters,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                  shadows: const [
+                    Shadow(
+                      color: Colors.black54,
+                      offset: Offset(0, 1),
+                      blurRadius: 2,
+                    ),
+                  ],
                 ),
-                SizedBox(width: 3.w),
-                Expanded(
-                  child: ComparisonCardWidget(
-                    title: loc.comEffatha,
-                    value: _effathaResults['profitabilityPercent'] ?? '0%',
-                    subtitle: loc.enhancedProfitability,
-                    isEffatha: false,
-                    accentColor: AppTheme.successLight,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 3.h),
-            Text(
-              loc.inputParameters,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                    shadows: const [
-                      Shadow(
-                        color: Colors.black54,
-                        offset: Offset(0, 1),
-                        blurRadius: 2,
-                      ),
-                    ],
-                  ),
-            ),
-            SizedBox(height: 2.h),
+          ),
+          SizedBox(height: 2.h),
+
 
             // ---------- Inputs ----------
             InputCardWidget(
