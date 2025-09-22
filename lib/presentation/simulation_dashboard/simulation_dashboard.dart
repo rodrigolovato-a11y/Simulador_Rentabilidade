@@ -348,16 +348,25 @@ floatingActionButton: _tabController.index == 0
   }
 
   Widget _buildAppBar(ThemeData theme, bool isDark) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.2.h),
+  return SizedBox(
+    height: 40, // altura total da barra (ajuste aqui)
+    child: Padding(
+      padding: EdgeInsets.symmetric(horizontal: 4.w), // sem padding vertical
       child: Row(
         children: [
           Expanded(
             child: Align(
               alignment: Alignment.centerLeft,
-              child: EffathaLogoWidget(
-                width: 38.w,
-                padding: EdgeInsets.zero,
+              // limita a altura do logo para ele não "forçar" a barra a crescer
+              child: SizedBox(
+                height: 32, // altura do logo (ajuste fino)
+                child: FittedBox(
+                  fit: BoxFit.contain,
+                  child: EffathaLogoWidget(
+                    width: 38.w,
+                    padding: EdgeInsets.zero,
+                  ),
+                ),
               ),
             ),
           ),
@@ -366,15 +375,19 @@ floatingActionButton: _tabController.index == 0
             icon: const CustomIconWidget(
               iconName: 'settings',
               color: Colors.white,
-              size: 24,
+              size: 22,
             ),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+            visualDensity: VisualDensity.compact,
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
-  Widget _buildTabBar(ThemeData theme, bool isDark) {
+Widget _buildTabBar(ThemeData theme, bool isDark) {
   final loc = AppLocalizations.of(context)!;
 
   return Container(
@@ -384,7 +397,7 @@ floatingActionButton: _tabController.index == 0
       borderRadius: BorderRadius.circular(12),
     ),
     child: SizedBox(
-      height: 36, // <-- altura da barra
+      height: 36, // altura da barra de abas
       child: TabBar(
         controller: _tabController,
         tabs: [
