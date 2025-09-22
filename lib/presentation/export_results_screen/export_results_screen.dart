@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../services/report/report_service.dart';
 import 'report_template_widget.dart';
 import '../services/report/report_capture.dart';
+import 'package:effatha_agro_simulator/l10n/app_localizations.dart';
 
 /// Mantido por compatibilidade com a navegação tipada
 class SimulationExportArgs {
@@ -57,6 +58,8 @@ class _ExportResultsScreenState extends State<ExportResultsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
     // Aceita SimulationExportArgs OU Map<String, dynamic>
     final raw = ModalRoute.of(context)?.settings.arguments;
 
@@ -90,10 +93,31 @@ class _ExportResultsScreenState extends State<ExportResultsScreen> {
 
     if (traditional == null || effatha == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Export Report')),
-        body: const Center(child: Text('No data received for export.')),
+        appBar: AppBar(title: Text(loc.exportReport)),
+        body: Center(child: Text(loc.noDataForExport)),
       );
     }
+
+    // ===== rótulos traduzidos para o PDF =====
+    final labels = ReportLabels(
+      reportTitle: loc.exportReport,
+      sectionResults: loc.results,
+      traditionalTitle: loc.traditionalFarming,
+      effathaTitle: loc.comEffatha,
+      totalInvestment: loc.totalInvestment,
+      totalRevenue: loc.totalRevenue,
+      totalProduction: loc.totalProduction,
+      totalProfit: loc.totalProfit,
+      totalProfitPercent: loc.totalProfitPercent,
+      profitability: loc.profitability,
+      difference: loc.difference,
+      additionalProfitability: loc.additionalProfitability,
+      farmStandard: loc.farmStandard,
+      currencySymbol: r'$',
+      cropLabel: _cropNameForPdf(loc, cropKey),
+      areaUnitLabel: _areaUnitLabel(loc, areaUnit),
+      productivityUnitLabel: productivityUnit,
+    );
 
     final reportData = SimulationReportData(
       traditional: traditional,
@@ -102,14 +126,15 @@ class _ExportResultsScreenState extends State<ExportResultsScreen> {
       areaUnit: areaUnit,
       productivityUnit: productivityUnit,
       kgPerSack: kgPerSack,
+      labels: labels,
     );
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Export Report'),
+        title: Text(loc.exportReport),
         actions: [
           IconButton(
-            tooltip: 'Share as PNG',
+            tooltip: loc.shareAsPng,
             onPressed: () async {
               try {
                 final file = await _capture.saveAsPng(
@@ -122,7 +147,7 @@ class _ExportResultsScreenState extends State<ExportResultsScreen> {
               } catch (e) {
                 if (!mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('PNG export failed: $e')),
+                  SnackBar(content: Text('${loc.pngExportFailed}: $e')),
                 );
               }
             },
@@ -132,7 +157,6 @@ class _ExportResultsScreenState extends State<ExportResultsScreen> {
       ),
       body: Column(
         children: [
-          // Preview do PDF
           Expanded(
             child: PdfPreview(
               canChangeOrientation: false,
@@ -142,7 +166,7 @@ class _ExportResultsScreenState extends State<ExportResultsScreen> {
             ),
           ),
 
-          // Prévia PNG / Área de captura
+          // Prévia PNG (o conteúdo é um widget Flutter e já pega o idioma atual)
           Container(
             height: 340,
             width: double.infinity,
@@ -167,19 +191,54 @@ class _ExportResultsScreenState extends State<ExportResultsScreen> {
           );
         },
         icon: const Icon(Icons.picture_as_pdf_outlined),
-        label: const Text('Share PDF'),
+        label: Text(loc.sharePdf),
       ),
     );
   }
+
+  String _cropNameForPdf(AppLocalizations loc, String key) {
+    switch (key) {
+      case 'soy':
+        return loc.cropSoy;
+      case 'corn':
+        return loc.cropCorn;
+      case 'cotton':
+        return loc.cropCotton;
+      case 'sugarcane':
+        return loc.cropSugarcane;
+      case 'wheat':
+        return loc.cropWheat;
+      case 'coffee':
+        return loc.cropCoffee;
+      case 'orange':
+        return loc.cropOrange;
+      default:
+        return key;
+    }
+  }
+
+  String _areaUnitLabel(AppLocalizations loc, String unit) {
+    switch (unit) {
+      case 'hectares':
+        return loc.hectares;
+      case 'acres':
+        return loc.acres;
+      case 'm²':
+        return loc.squareMeters;
+      default:
+        return unit;
+    }
+  }
 }
 
-/// Wrapper só para ler o mesmo arguments que a tela recebeu e
+/// Wrapper só para ler os mesmos arguments que a tela recebeu e
 /// montar o ReportTemplateWidget sem repetir parsing.
 class _ReportPreviewShell extends StatelessWidget {
   const _ReportPreviewShell();
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final raw = ModalRoute.of(context)?.settings.arguments;
 
     Map<String, dynamic>? traditional;
