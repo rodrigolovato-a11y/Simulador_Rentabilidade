@@ -91,10 +91,5 @@
   "noDataForExport": "No data received for export.",
   "sharePdf": "Share PDF",
   "shareAsPng": "Share as PNG",
-  "pngExportFailed": "PNG export failed",
-  "exportReport": "Exportar informe",
-  "noDataForExport": "Sin datos para exportar.",
-  "sharePdf": "Compartir PDF",
-  "shareAsPng": "Compartir como PNG",
-  "pngExportFailed": "Error al exportar PNG"
+  "pngExportFailed": "PNG export failed"
 }
