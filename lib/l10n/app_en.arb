@@ -87,4 +87,9 @@
   "cropWheat": "Wheat",
   "cropCoffee": "Coffee",
   "cropOrange": "Orange"
+  "exportReport": "Export Report",
+  "noDataForExport": "No data received for export.",
+  "sharePdf": "Share PDF",
+  "shareAsPng": "Share as PNG",
+  "pngExportFailed": "PNG export failed"
 }
