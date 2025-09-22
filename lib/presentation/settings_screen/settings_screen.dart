@@ -22,15 +22,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Locale(parts[0], parts[1]);
   }
 
-  // Estado
   bool _isLoading = true;
 
-  // Preferências
   String _selectedAreaUnit = 'hectares'; // 'hectares' | 'acres' | 'm²'
   String _selectedLanguage = 'pt_BR';    // 'pt_BR' | 'en_US'
-  double _kgPerSackWeight = 60.0;        // peso padrão de 1 saca (kg)
+  double _kgPerSackWeight = 60.0;
 
-  // ===== Ciclo de vida =====
   @override
   void initState() {
     super.initState();
@@ -41,19 +38,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       final prefs = await SharedPreferences.getInstance();
       setState(() {
-        _selectedAreaUnit =
-            prefs.getString('selected_area_unit') ?? 'hectares';
-        _selectedLanguage =
-            prefs.getString('selected_language') ?? 'pt_BR';
-        _kgPerSackWeight =
-            prefs.getDouble('kg_per_sack_weight') ?? 60.0;
+        _selectedAreaUnit = prefs.getString('selected_area_unit') ?? 'hectares';
+        _selectedLanguage = prefs.getString('selected_language') ?? 'pt_BR';
+        _kgPerSackWeight = prefs.getDouble('kg_per_sack_weight') ?? 60.0;
         _isLoading = false;
       });
-    } catch (e) {
-      // Em caso de erro, usa defaults e libera UI
-      setState(() {
-        _isLoading = false;
-      });
+    } catch (_) {
+      setState(() => _isLoading = false);
     }
   }
 
@@ -68,7 +59,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     Navigator.pushNamedAndRemoveUntil(context, '/login-screen', (_) => false);
   }
 
-  // ===== UI =====
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -92,7 +82,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               if (!mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  // usa chave existente
                   content: Text(AppLocalizations.of(context)!.save),
                   duration: const Duration(seconds: 1),
                 ),
@@ -172,13 +161,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             SizedBox(height: 1.2.h),
 
-            // Botão "Aplicar idioma agora" – troca runtime (definitivo)
+            // Botão "Aplicar idioma agora"
             Align(
               alignment: Alignment.centerLeft,
               child: ElevatedButton.icon(
                 onPressed: () async {
                   await _savePrefs();
-                  // troca o locale em tempo real; o MaterialApp é rebuildado
                   final locale = _parseLocaleTag(_selectedLanguage);
                   LocaleController.instance.setLocale(locale);
 
@@ -197,7 +185,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             SizedBox(height: 3.h),
 
-            // ===== Peso da saca (kg) =====
+            // ===== Peso por saca (kg) =====
             Text(
               'Peso por saca (kg)',
               style: theme.textTheme.titleMedium?.copyWith(
