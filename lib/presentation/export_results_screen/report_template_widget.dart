@@ -1,10 +1,10 @@
-import 'package:effatha_agro_simulator/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class ReportTemplateWidget extends StatelessWidget {
   final Map<String, dynamic> traditional;
   final Map<String, dynamic> effatha;
+  final String cropKey;           // agora suportado (compatível com as chamadas)
   final String areaUnit;
   final String productivityUnit;
 
@@ -12,21 +12,22 @@ class ReportTemplateWidget extends StatelessWidget {
     super.key,
     required this.traditional,
     required this.effatha,
+    required this.cropKey,
     required this.areaUnit,
     required this.productivityUnit,
   });
 
-  String _fmtMoney(BuildContext context, double v) {
+  String _fmtMoney(double v) {
     final f = NumberFormat.currency(locale: 'pt_BR', symbol: r'R$ ', decimalDigits: 2);
     return f.format(v);
   }
 
-  String _fmtPercent(BuildContext context, double v, {int decimals = 1}) {
+  String _fmtPercent(double v, {int decimals = 1}) {
     final rounded = double.parse(v.toStringAsFixed(decimals));
     return '${NumberFormat.decimalPattern('pt_BR').format(rounded)}%';
   }
 
-  String _prodKgToSc(BuildContext context, double kg, double kgPerSack) {
+  String _prodKgToSc(double kg, double kgPerSack) {
     final sc = kgPerSack > 0 ? kg / kgPerSack : 0.0;
     return '${NumberFormat.decimalPattern('pt_BR').format(sc.round())} sc';
   }
@@ -48,14 +49,12 @@ class ReportTemplateWidget extends StatelessWidget {
     final double tPerc = (traditional['_profitabilityRaw'] as double?) ?? 0.0;
     final double ePerc = (effatha['_profitabilityRaw'] as double?) ?? 0.0;
 
-    // Diferença monetária (lucro adicional em R$)
+    // Lucro adicional (R$) e em %
     final double diffProfitMoney = eProfit - tProfit;
-
-    // Lucro adicional (%) – modelo antigo (base no lucro tradicional)
     final double additionalProfitPercent =
         tProfit.abs() > 0 ? ((eProfit - tProfit) / tProfit) * 100.0 : 0.0;
 
-    // Peso da saca para conversão (se vier junto do mapa, usa; senão default 60)
+    // Peso por saca (pode vir nos mapas; senão 60)
     final double kgPerSack =
         (effatha['kgPerSack'] as double?) ??
         (traditional['kgPerSack'] as double?) ??
@@ -78,44 +77,44 @@ class ReportTemplateWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Título simples (evita depender de chave i18n incerta)
           Text(
-            AppLocalizations.of(context)!.results,
+            'Resultados',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
           ),
           const SizedBox(height: 8),
 
-          // Totais (Padrão x Effatha)
           _doubleRow(
             context,
-            label: AppLocalizations.of(context)!.totalInvestment,
-            left: _fmtMoney(context, tCosts),
-            right: _fmtMoney(context, eCosts),
+            label: 'Investimento total',
+            left: _fmtMoney(tCosts),
+            right: _fmtMoney(eCosts),
           ),
           _doubleRow(
             context,
-            label: AppLocalizations.of(context)!.totalRevenue,
-            left: _fmtMoney(context, tRevenue),
-            right: _fmtMoney(context, eRevenue),
+            label: 'Receita total',
+            left: _fmtMoney(tRevenue),
+            right: _fmtMoney(eRevenue),
           ),
           _doubleRow(
             context,
-            label: AppLocalizations.of(context)!.totalProduction,
-            left: _prodKgToSc(context, tProdKg, kgPerSack),
-            right: _prodKgToSc(context, eProdKg, kgPerSack),
+            label: 'Produção total',
+            left: _prodKgToSc(tProdKg, kgPerSack),
+            right: _prodKgToSc(eProdKg, kgPerSack),
           ),
           _doubleRow(
             context,
-            label: AppLocalizations.of(context)!.totalProfit,
-            left: _fmtMoney(context, tProfit),
-            right: _fmtMoney(context, eProfit),
+            label: 'Lucro total',
+            left: _fmtMoney(tProfit),
+            right: _fmtMoney(eProfit),
           ),
           _doubleRow(
             context,
-            label: AppLocalizations.of(context)!.totalProfitPercent,
-            left: _fmtPercent(context, tPerc),
-            right: _fmtPercent(context, ePerc),
+            label: 'Rentabilidade (%)',
+            left: _fmtPercent(tPerc),
+            right: _fmtPercent(ePerc),
           ),
 
           const SizedBox(height: 16),
@@ -144,18 +143,16 @@ class ReportTemplateWidget extends StatelessWidget {
                 Expanded(
                   child: _highlightTile(
                     context,
-                    // usa chave existente no ARB
-                    title: AppLocalizations.of(context)!.additionalProfitCash,
-                    value: _fmtMoney(context, diffProfitMoney),
+                    title: 'Diferença (R\$)',
+                    value: _fmtMoney(diffProfitMoney),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: _highlightTile(
                     context,
-                    // usa chave existente no ARB
-                    title: AppLocalizations.of(context)!.additionalProfitPercent,
-                    value: _fmtPercent(context, additionalProfitPercent, decimals: 2),
+                    title: 'Lucro adicional (%)',
+                    value: _fmtPercent(additionalProfitPercent, decimals: 2),
                   ),
                 ),
               ],
