@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer/sizer.dart';
 
-import '../../core/app_export.dart';
 import '../../core/localization/locale_controller.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -15,6 +14,15 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  // Estado
+  bool _isLoading = true;
+
+  // Preferências
+  String _selectedAreaUnit = 'hectares'; // 'hectares' | 'acres' | 'm²'
+  String _selectedLanguageTag = 'pt_BR'; // tag persistida ('pt_BR', 'en_US', ...)
+  double _kgPerSackWeight = 60.0;        // peso padrão de 1 saca (kg)
+
+  // ===== Helpers =====
   Locale _parseLocaleTag(String tag) {
     final parts = tag.split(RegExp(r'[-_]'));
     if (parts.isEmpty) return const Locale('en');
@@ -22,12 +30,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Locale(parts[0], parts[1]);
   }
 
-  bool _isLoading = true;
+  String _toTag(Locale locale) {
+    if ((locale.countryCode ?? '').isNotEmpty) {
+      return '${locale.languageCode}_${locale.countryCode}';
+    }
+    return locale.languageCode;
+  }
 
-  String _selectedAreaUnit = 'hectares'; // 'hectares' | 'acres' | 'm²'
-  String _selectedLanguage = 'pt_BR';    // 'pt_BR' | 'en_US'
-  double _kgPerSackWeight = 60.0;
+  String _humanNameForLocale(Locale l) {
+    // Nomes exibidos no seletor. Ajuste se desejar.
+    final code = l.languageCode.toLowerCase();
+    final cc = (l.countryCode ?? '').toUpperCase();
+    switch (code) {
+      case 'pt':
+        return cc == 'BR' || cc.isEmpty ? 'Português (Brasil)' : 'Português';
+      case 'en':
+        return cc == 'US' || cc.isEmpty ? 'English (US)' : 'English';
+      case 'es':
+        return 'Español';
+      case 'fr':
+        return 'Français';
+      case 'de':
+        return 'Deutsch';
+      default:
+        // Fallback genérico: mostra o código
+        return '${l.languageCode}${cc.isNotEmpty ? ' ($cc)' : ''}';
+    }
+  }
 
+  // ===== Ciclo de vida =====
   @override
   void initState() {
     super.initState();
@@ -39,29 +70,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final prefs = await SharedPreferences.getInstance();
       setState(() {
         _selectedAreaUnit = prefs.getString('selected_area_unit') ?? 'hectares';
-        _selectedLanguage = prefs.getString('selected_language') ?? 'pt_BR';
+        _selectedLanguageTag = prefs.getString('selected_language') ?? 'pt_BR';
         _kgPerSackWeight = prefs.getDouble('kg_per_sack_weight') ?? 60.0;
         _isLoading = false;
       });
+
+      // Se o idioma salvo não estiver mais na lista suportada, ajusta para o primeiro suportado
+      final supported = AppLocalizations.supportedLocales;
+      final tags = supported.map(_toTag).toSet();
+      if (!tags.contains(_selectedLanguageTag) && supported.isNotEmpty) {
+        final fallbackTag = _toTag(supported.first);
+        setState(() => _selectedLanguageTag = fallbackTag);
+        // Atualiza de imediato o app para o fallback
+        await LocaleController.instance.setLocale(_parseLocaleTag(fallbackTag));
+        final p = await SharedPreferences.getInstance();
+        await p.setString('selected_language', fallbackTag);
+      }
     } catch (_) {
       setState(() => _isLoading = false);
     }
   }
 
-  Future<void> _savePrefs() async {
+  Future<void> _persistPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('selected_area_unit', _selectedAreaUnit);
-    await prefs.setString('selected_language', _selectedLanguage);
+    await prefs.setString('selected_language', _selectedLanguageTag);
     await prefs.setDouble('kg_per_sack_weight', _kgPerSackWeight);
   }
 
-  void _handleLogout() {
-    Navigator.pushNamedAndRemoveUntil(context, '/login-screen', (_) => false);
-  }
-
+  // ===== UI =====
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final supportedLocales = AppLocalizations.supportedLocales;
 
     if (_isLoading) {
       return Scaffold(
@@ -72,17 +113,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
       );
     }
 
+    // Garante que o valor atual existe nas opções (evita crash do Dropdown)
+    final currentTag = _selectedLanguageTag;
+    final supportedTags = supportedLocales.map(_toTag).toList();
+    final dropdownValue = supportedTags.contains(currentTag)
+        ? currentTag
+        : (supportedTags.isNotEmpty ? supportedTags.first : 'pt_BR');
+
     return Scaffold(
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.applicationSettings),
         actions: [
           IconButton(
             onPressed: () async {
-              await _savePrefs();
+              await _persistPrefs();
               if (!mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(AppLocalizations.of(context)!.save),
+                  content: Text(AppLocalizations.of(context)!.advancedSettings),
                   duration: const Duration(seconds: 1),
                 ),
               );
@@ -143,49 +191,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             SizedBox(height: 1.h),
             DropdownButtonFormField<String>(
-              value: _selectedLanguage,
-              onChanged: (value) {
-                setState(() {
-                  _selectedLanguage = value ?? 'pt_BR';
-                });
+              value: dropdownValue,
+              onChanged: (value) async {
+                final tag = value ?? dropdownValue;
+                setState(() => _selectedLanguageTag = tag);
+
+                // 1) Aplica imediatamente no app
+                final locale = _parseLocaleTag(tag);
+                await LocaleController.instance.setLocale(locale);
+
+                // 2) Persiste
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.setString('selected_language', tag);
+
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Idioma aplicado'),
+                    duration: Duration(milliseconds: 900),
+                  ),
+                );
               },
               decoration: const InputDecoration(
                 labelText: 'Idioma',
                 border: OutlineInputBorder(),
               ),
-              items: const [
-                DropdownMenuItem(value: 'pt_BR', child: Text('Português (Brasil)')),
-                DropdownMenuItem(value: 'en_US', child: Text('English (US)')),
-              ],
-            ),
-
-            SizedBox(height: 1.2.h),
-
-            // Botão "Aplicar idioma agora"
-            Align(
-              alignment: Alignment.centerLeft,
-              child: ElevatedButton.icon(
-                onPressed: () async {
-                  await _savePrefs();
-                  final locale = _parseLocaleTag(_selectedLanguage);
-                  LocaleController.instance.setLocale(locale);
-
-                  if (!mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(AppLocalizations.of(context)!.save),
-                      duration: const Duration(seconds: 1),
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.language),
-                label: const Text('Aplicar idioma agora'),
-              ),
+              items: supportedLocales.map((loc) {
+                final tag = _toTag(loc);
+                return DropdownMenuItem(
+                  value: tag,
+                  child: Text(_humanNameForLocale(loc)),
+                );
+              }).toList(),
             ),
 
             SizedBox(height: 3.h),
 
-            // ===== Peso por saca (kg) =====
+            // ===== Peso da saca (kg) =====
             Text(
               'Peso por saca (kg)',
               style: theme.textTheme.titleMedium?.copyWith(
@@ -195,7 +237,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             SizedBox(height: 1.h),
             TextFormField(
               initialValue: _kgPerSackWeight.toStringAsFixed(1),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
               ],
@@ -204,7 +247,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 border: OutlineInputBorder(),
               ),
               onChanged: (v) {
-                final parsed = double.tryParse(v.replaceAll(',', '.'));
+                final parsed =
+                    double.tryParse(v.replaceAll(',', '.'));
                 if (parsed != null && parsed > 0) {
                   setState(() {
                     _kgPerSackWeight = parsed;
@@ -220,12 +264,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 ElevatedButton.icon(
                   onPressed: () async {
-                    await _savePrefs();
+                    await _persistPrefs();
                     if (!mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(AppLocalizations.of(context)!.save),
-                        duration: const Duration(seconds: 1),
+                      const SnackBar(
+                        content: Text('Preferências salvas'),
+                        duration: Duration(seconds: 1),
                       ),
                     );
                   },
@@ -234,7 +278,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 const SizedBox(width: 12),
                 OutlinedButton.icon(
-                  onPressed: _handleLogout,
+                  onPressed: () {
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      '/login-screen',
+                      (_) => false,
+                    );
+                  },
                   icon: const Icon(Icons.logout),
                   label: Text(AppLocalizations.of(context)!.logout),
                 ),
