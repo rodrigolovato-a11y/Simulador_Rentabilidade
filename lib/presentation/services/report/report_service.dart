@@ -1,6 +1,8 @@
 import 'dart:typed_data';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:pdf/pdf.dart';
+import 'package:intl/intl.dart';
+
 
 /// Campo genérico para lista de parâmetros/observações.
 class ReportField {
@@ -97,18 +99,24 @@ class ReportService {
     final t = data.traditional;
     final e = data.effatha;
 
+    // === formatadores pt-BR (milhar com ponto, decimais com vírgula) ===
+    final _currencyFmt = NumberFormat.currency(
+      locale: 'pt_BR',
+      symbol: '${data.labels.currencySymbol} ',
+    );
+    final _numFmt = NumberFormat.decimalPattern('pt_BR');
+
     String _s(Object? v) => v?.toString() ?? '';
 
     String _money(Object? v) {
-      if (v == null) return '${data.labels.currencySymbol} 0,00';
-      final num n = (v is num) ? v : num.tryParse(v.toString()) ?? 0;
-      return '${data.labels.currencySymbol} ' +
-          n.toStringAsFixed(2).replaceAll('.', ',');
+      final num n = (v is num) ? v : num.tryParse(v?.toString() ?? '') ?? 0;
+      return _currencyFmt.format(n); // ex.: R$ 1.234.567,89
     }
 
     String _percent(Object? v) {
-      final num n = (v is num) ? v : num.tryParse(v.toString()) ?? 0;
-      return '${n.toStringAsFixed(2)}%';
+      final num n = (v is num) ? v : num.tryParse(v?.toString() ?? '') ?? 0;
+      final fixed = double.parse(n.toStringAsFixed(2));
+      return '${_numFmt.format(fixed)}%'; // ex.: 12,34%
     }
 
     double _safePct({required double base, required double diff}) {
@@ -413,3 +421,4 @@ class ReportService {
     // Obs.: o texto “Data/Hora” vem de labels.dateTimeLabel (localizado)
   }
 }
+
