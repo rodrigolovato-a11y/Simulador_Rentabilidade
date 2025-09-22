@@ -84,13 +84,13 @@ class _SimulationDashboardState extends State<SimulationDashboard>
   // Helpers de formatação
   String _fmtMoney(double value) {
     final f =
-        NumberFormat.currency(locale: Localizations.localeOf(context).toLanguageTag().replaceAll('-', '_'), symbol: r'$ ', decimalDigits: 2);
+        NumberFormat.currency(locale: 'pt_BR', symbol: r'$ ', decimalDigits: 2);
     return f.format(value);
   }
 
   String _fmtPercent(double value, {int decimals = 1}) {
     final rounded = double.parse(value.toStringAsFixed(decimals));
-    return '${NumberFormat.decimalPattern(Localizations.localeOf(context).toLanguageTag().replaceAll('-', '_')).format(rounded)}%';
+    return '${NumberFormat.decimalPattern('pt_BR').format(rounded)}%';
   }
 
   String _formatTotalProduction(double totalKg) {
@@ -586,17 +586,17 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     final double tProfit = (_traditionalResults['profit'] as double?) ?? 0.0;
     final double eProfit = (_effathaResults['profit'] as double?) ?? 0.0;
 
+    final double tProdKg =
+        (_traditionalResults['_productionKg'] as double?) ?? 0;
+    final double eProdKg =
+        (_effathaResults['_productionKg'] as double?) ?? 0;
+
         final double tRevenue =
         (_traditionalResults['revenue'] as double?) ?? 0.0;
     final double eRevenue =
         (_effathaResults['revenue'] as double?) ?? 0.0;
 
-final double tProdKg =
-        (_traditionalResults['_productionKg'] as double?) ?? 0;
-    final double eProdKg =
-        (_effathaResults['_productionKg'] as double?) ?? 0;
-
-    final double tCosts =
+final double tCosts =
         (_traditionalResults['_totalCosts'] as double?) ?? 0;
     final double eCosts =
         (_effathaResults['_totalCosts'] as double?) ?? 0;
@@ -615,7 +615,7 @@ final double tProdKg =
 
     String prodToSc(double kg) {
       final sc = _kgPerSackWeight > 0 ? kg / _kgPerSackWeight : 0.0;
-      return '${NumberFormat.decimalPattern(Localizations.localeOf(context).toLanguageTag().replaceAll('-', '_')).format(sc.round())} sc';
+      return '${NumberFormat.decimalPattern('pt_BR').format(sc.round())} sc';
     }
 
     return Container(
@@ -637,7 +637,7 @@ final double tProdKg =
         children: [
           // Título atualizado
           Text(
-            AppLocalizations.of(context)!.resultsTitle,
+            'Resultados',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -647,12 +647,6 @@ final double tProdKg =
             context,
             label: AppLocalizations.of(context)!.totalInvestment,
             left: _fmtMoney(tCosts),
-            right: _fmtMoney(eCosts),
-          ),
-          _doubleRow(
-            context,
-            label: AppLocalizations.of(context)!.totalProduction,
-            left: prodToSc(tProdKg),
           _doubleRow(
             context,
             label: AppLocalizations.of(context)!.totalRevenue,
@@ -660,6 +654,12 @@ final double tProdKg =
             right: _fmtMoney(eRevenue),
           ),
 
+            right: _fmtMoney(eCosts),
+          ),
+          _doubleRow(
+            context,
+            label: AppLocalizations.of(context)!.totalProduction,
+            left: prodToSc(tProdKg),
             right: prodToSc(eProdKg),
           ),
           _doubleRow(
