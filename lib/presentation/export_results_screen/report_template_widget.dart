@@ -20,18 +20,26 @@ class ReportTemplateWidget extends StatelessWidget {
     this.kgPerSack = 60.0,
   });
 
-  String _fmtMoney(double v) =>
-      NumberFormat.currency(locale: Localizations.localeOf(context).toLanguageTag().replaceAll('-', '_'), symbol: r'$ ', decimalDigits: 2)
+  String _fmtMoney(context, double v) =>
+      NumberFormat.currency(locale: 'pt_BR', symbol: r'$ ', decimalDigits: 2)
           .format(v);
 
-  String _fmtPercent(double v, {int decimals = 1}) {
-    final fixed = double.parse(v.toStringAsFixed(decimals));
-    return '${NumberFormat.decimalPattern(Localizations.localeOf(context).toLanguageTag().replaceAll('-', '_')).format(fixed)}%';
+  String _fmtPercent(context, BuildContext context, double v) {
+  final fixed = double.parse(v.toStringAsFixed(2));
+  final f = NumberFormat.decimalPattern(
+    Localizations.localeOf(context).toLanguageTag().replaceAll('-', '_'),
+  );
+  return '${f.format(fixed)}%';
+}%';
   }
 
-  String _prodKgToSc(double kg) {
-    final sc = kgPerSack > 0 ? kg / kgPerSack : 0;
-    return '${NumberFormat.decimalPattern(Localizations.localeOf(context).toLanguageTag().replaceAll('-', '_')).format(sc.round())} sc';
+  String _prodKgToSc(context, BuildContext context, double kg) {
+  final sc = kg / 60.0;
+  final f = NumberFormat.decimalPattern(
+    Localizations.localeOf(context).toLanguageTag().replaceAll('-', '_'),
+  );
+  return '${f.format(sc.round())} sc';
+} sc';
   }
 
   @override
@@ -70,12 +78,12 @@ class ReportTemplateWidget extends StatelessWidget {
             const SizedBox(height: 8),
 
             // Tabela de duas colunas (igual ao Dashboard/PDF)
-            _row2(AppLocalizations.of(context)!.totalInvestment,, _fmtMoney(tCosts), _fmtMoney(eCosts)),
-            _row2(AppLocalizations.of(context)!.totalProduction,, _prodKgToSc(tProdKg), _prodKgToSc(eProdKg)),
-            _row2(AppLocalizations.of(context)!.totalRevenue,, _fmtMoney(tRevenue), _fmtMoney(eRevenue)),
-            _row2(AppLocalizations.of(context)!.totalProfit,, _fmtMoney(tProfit), _fmtMoney(eProfit)),
-            _row2(AppLocalizations.of(context)!.totalProfitPercent,,
-                _fmtPercent(tPerc), _fmtPercent(ePerc)),
+            _row2(AppLocalizations.of(context)!.totalInvestment, _fmtMoney(context, tCosts), _fmtMoney(context, eCosts)),
+            _row2(AppLocalizations.of(context)!.totalProduction, _prodKgToSc(context, tProdKg), _prodKgToSc(context, eProdKg)),
+            _row2(AppLocalizations.of(context)!.totalRevenue, _fmtMoney(context, tRevenue), _fmtMoney(context, eRevenue)),
+            _row2(AppLocalizations.of(context)!.totalProfit, _fmtMoney(context, tProfit), _fmtMoney(context, eProfit)),
+            _row2(AppLocalizations.of(context)!.totalProfitPercent,
+                _fmtPercent(context, tPerc), _fmtPercent(context, ePerc)),
 
             const SizedBox(height: 12),
 
@@ -104,13 +112,13 @@ class ReportTemplateWidget extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: _tile('Diferença (\$)', _fmtMoney(diffMoney)),
+                          child: _tile('Diferença (\$)', _fmtMoney(context, diffMoney)),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: _tile(
                               'Comparação (%)',
-                              _fmtPercent(
+                              _fmtPercent(context, 
                                 comparisonPct,
                                 decimals: 2,
                               )),
