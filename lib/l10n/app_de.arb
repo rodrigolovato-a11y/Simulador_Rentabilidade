@@ -89,7 +89,7 @@
   "cropSugarcane": "Zuckerrohr",
   "cropWheat": "Weizen",
   "cropCoffee": "Kaffee",
-  "cropOrange": "Orange"
+  "cropOrange": "Orange",
   "exportReport": "Bericht exportieren",
   "noDataForExport": "Keine Daten zum Exportieren.",
   "sharePdf": "PDF teilen",
