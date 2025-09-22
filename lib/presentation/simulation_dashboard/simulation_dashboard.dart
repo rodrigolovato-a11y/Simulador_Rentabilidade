@@ -349,21 +349,21 @@ floatingActionButton: _tabController.index == 0
 
   Widget _buildAppBar(ThemeData theme, bool isDark) {
   return SizedBox(
-    height: 45, // altura total da barra (ajuste aqui)
+    height: 56, // barra um pouco mais alta para valorizar o logo
     child: Padding(
-      padding: EdgeInsets.symmetric(horizontal: 4.w), // sem padding vertical
+      padding: EdgeInsets.symmetric(horizontal: 4.w),
       child: Row(
         children: [
           Expanded(
             child: Align(
               alignment: Alignment.centerLeft,
-              // limita a altura do logo para ele não "forçar" a barra a crescer
+              // aumenta o logo sem forçar a barra a crescer
               child: SizedBox(
-                height: 32, // altura do logo (ajuste fino)
+                height: 44, // << AQUI você destaca a marca (pode subir até ~48)
                 child: FittedBox(
                   fit: BoxFit.contain,
                   child: EffathaLogoWidget(
-                    width: 38.w,
+                    width: 46.w, // largura relativa maior
                     padding: EdgeInsets.zero,
                   ),
                 ),
@@ -375,7 +375,7 @@ floatingActionButton: _tabController.index == 0
             icon: const CustomIconWidget(
               iconName: 'settings',
               color: Colors.white,
-              size: 22,
+              size: 24,
             ),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
@@ -393,11 +393,11 @@ Widget _buildTabBar(ThemeData theme, bool isDark) {
   return Container(
     margin: EdgeInsets.symmetric(horizontal: 4.w),
     decoration: BoxDecoration(
-      color: Colors.white.withOpacity(0.1),
+      color: Colors.white.withOpacity(0.10),
       borderRadius: BorderRadius.circular(12),
     ),
     child: SizedBox(
-      height: 36, // altura da barra de abas
+      height: 28, // << barra de abas mais baixa
       child: TabBar(
         controller: _tabController,
         tabs: [
