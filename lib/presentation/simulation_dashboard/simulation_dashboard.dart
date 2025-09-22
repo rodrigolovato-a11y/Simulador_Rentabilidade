@@ -10,7 +10,6 @@ import '../export_results_screen/export_results_screen.dart';
 import './widgets/comparison_card_widget.dart';
 import './widgets/crop_selector_widget.dart';
 import './widgets/input_card_widget.dart';
-// >>> adiciona o logo oficial
 import '../../widgets/effatha_logo_widget.dart';
 
 class SimulationDashboard extends StatefulWidget {
@@ -64,7 +63,6 @@ class _SimulationDashboardState extends State<SimulationDashboard>
   void initState() {
     _loadKgPerSack();
     super.initState();
-    // tinham 3 abas mas só existem 2 telas — corrige aqui
     _tabController = TabController(length: 2, vsync: this);
     _calculateResults();
   }
@@ -331,13 +329,12 @@ class _SimulationDashboardState extends State<SimulationDashboard>
       padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.2.h),
       child: Row(
         children: [
-          // >>> substitui imagem quadrada + texto por logo SVG
           Expanded(
             child: Align(
               alignment: Alignment.centerLeft,
               child: EffathaLogoWidget(
-                width: 52.w,              // ajuste fino aqui (48–60.w)
-                padding: EdgeInsets.zero, // sem bordas extras
+                width: 52.w,
+                padding: EdgeInsets.zero,
               ),
             ),
           ),
@@ -558,8 +555,8 @@ class _SimulationDashboardState extends State<SimulationDashboard>
                 setState(() => _additionalProductivityUnit = u);
                 _calculateResults();
               },
-              hintText: AppLocalizations.of(context)!
-                  .enterAdditionalProductivity,
+              hintText:
+                  AppLocalizations.of(context)!.enterAdditionalProductivity,
               onChanged: (value) {
                 setState(() => _additionalProductivity = value);
                 _calculateResults();
@@ -591,12 +588,12 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     final double eProdKg =
         (_effathaResults['_productionKg'] as double?) ?? 0;
 
-        final double tRevenue =
+    final double tRevenue =
         (_traditionalResults['revenue'] as double?) ?? 0.0;
     final double eRevenue =
         (_effathaResults['revenue'] as double?) ?? 0.0;
 
-final double tCosts =
+    final double tCosts =
         (_traditionalResults['_totalCosts'] as double?) ?? 0;
     final double eCosts =
         (_effathaResults['_totalCosts'] as double?) ?? 0;
@@ -654,9 +651,6 @@ final double tCosts =
             label: AppLocalizations.of(context)!.totalRevenue,
             left: _fmtMoney(tRevenue),
             right: _fmtMoney(eRevenue),
-          ),
-
-            right: _fmtMoney(eCosts),
           ),
           _doubleRow(
             context,
@@ -724,8 +718,9 @@ final double tCosts =
                         context,
                         title: 'Lucro adicional (%)',
                         value: _fmtPercent(
-                            additionalProfitPercent,
-                            decimals: 2),
+                          additionalProfitPercent,
+                          decimals: 2,
+                        ),
                       ),
                     ),
                   ],
