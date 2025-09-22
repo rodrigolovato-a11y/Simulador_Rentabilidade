@@ -349,7 +349,7 @@ floatingActionButton: _tabController.index == 0
 
   Widget _buildAppBar(ThemeData theme, bool isDark) {
   return SizedBox(
-    height: 56, // barra um pouco mais alta para valorizar o logo
+    height: 60, // barra continua compacta
     child: Padding(
       padding: EdgeInsets.symmetric(horizontal: 4.w),
       child: Row(
@@ -357,13 +357,14 @@ floatingActionButton: _tabController.index == 0
           Expanded(
             child: Align(
               alignment: Alignment.centerLeft,
-              // aumenta o logo sem forçar a barra a crescer
+              // LOGO MAIOR, controlado pela altura fixa do box
               child: SizedBox(
-                height: 44, // << AQUI você destaca a marca (pode subir até ~48)
+                height: 56, // aumente aqui (ex.: 56–60) para destacar a marca
                 child: FittedBox(
                   fit: BoxFit.contain,
                   child: EffathaLogoWidget(
-                    width: 46.w, // largura relativa maior
+                    width: 56.w,   // pode subir (ex.: 60.w) se quiser mais “respiro” horizontal
+                    height: 56,    // garante altura real do SVG/PNG
                     padding: EdgeInsets.zero,
                   ),
                 ),
