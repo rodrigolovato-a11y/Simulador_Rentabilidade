@@ -647,6 +647,8 @@ final double tCosts =
             context,
             label: AppLocalizations.of(context)!.totalInvestment,
             left: _fmtMoney(tCosts),
+            right: _fmtMoney(eCosts),
+          ),
           _doubleRow(
             context,
             label: AppLocalizations.of(context)!.totalRevenue,
