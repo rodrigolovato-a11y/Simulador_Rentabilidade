@@ -76,8 +76,8 @@ class EffathaLogoWidget extends StatelessWidget {
       constraints: BoxConstraints(
         maxWidth: logoWidth,
         maxHeight: logoHeight,
-        minWidth: 40,
-        minHeight: 40,
+        minWidth: 32,
+        minHeight: 32,
       ),
       child: assetPath.toLowerCase().endsWith('.svg')
           ? SvgPicture.asset(
