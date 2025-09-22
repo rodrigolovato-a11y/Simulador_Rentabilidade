@@ -375,30 +375,33 @@ floatingActionButton: _tabController.index == 0
   }
 
   Widget _buildTabBar(ThemeData theme, bool isDark) {
-    final loc = AppLocalizations.of(context)!;
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 4.w),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-      ),
+  final loc = AppLocalizations.of(context)!;
+
+  return Container(
+    margin: EdgeInsets.symmetric(horizontal: 4.w),
+    decoration: BoxDecoration(
+      color: Colors.white.withOpacity(0.1),
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: SizedBox(
+      height: 36, // <-- altura da barra
       child: TabBar(
-        height: 36, // <-- altura desejada (ajuste aqui)
         controller: _tabController,
         tabs: [
-          Tab(text: loc.dashboard), // i18n
-          Tab(text: loc.settings),  // i18n
+          Tab(text: loc.dashboard),
+          Tab(text: loc.settings),
         ],
         isScrollable: false,
-        labelPadding: const EdgeInsets.symmetric(horizontal: 8), // menor
-        indicatorWeight: 2, // linha mais fina
+        labelPadding: const EdgeInsets.symmetric(horizontal: 8),
+        indicatorWeight: 2,
         labelColor: Colors.white,
         unselectedLabelColor: Colors.white70,
         indicatorColor: Colors.white,
         dividerColor: Colors.transparent,
       ),
-    );
-  }
+    ),
+  );
+}
 
 Widget _buildDashboardTab() {
   final loc = AppLocalizations.of(context)!;
