@@ -72,4 +72,19 @@
   "language_es": "Spanish",
   "language_fr": "French",
   "language_de": "German"
+  "dashboard": "Dashboard",
+  "settings": "Settings",
+  "results": "Results",
+  "profitability": "Profitability",
+  "difference": "Difference",
+  "additionalProfitability": "Additional profit (%)",
+  "farmStandard": "Farm Standard",
+  "crop": "Crop",
+  "cropSoy": "Soy",
+  "cropCorn": "Corn",
+  "cropCotton": "Cotton",
+  "cropSugarcane": "Sugarcane",
+  "cropWheat": "Wheat",
+  "cropCoffee": "Coffee",
+  "cropOrange": "Orange"
 }
