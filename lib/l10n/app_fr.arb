@@ -75,4 +75,19 @@
   "language_fr": "Français",
   "language_de": "Allemand",
   "apply": "Appliquer"
+  "dashboard": "Tableau de bord",
+  "settings": "Paramètres",
+  "results": "Résultats",
+  "profitability": "Rentabilité",
+  "difference": "Différence",
+  "additionalProfitability": "Profit additionnel (%)",
+  "farmStandard": "Standard de la ferme",
+  "crop": "Culture",
+  "cropSoy": "Soja",
+  "cropCorn": "Maïs",
+  "cropCotton": "Coton",
+  "cropSugarcane": "Canne à sucre",
+  "cropWheat": "Blé",
+  "cropCoffee": "Café",
+  "cropOrange": "Orange"
 }
