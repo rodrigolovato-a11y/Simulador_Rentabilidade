@@ -349,7 +349,7 @@ floatingActionButton: _tabController.index == 0
 
   Widget _buildAppBar(ThemeData theme, bool isDark) {
   return SizedBox(
-    height: 40, // altura total da barra (ajuste aqui)
+    height: 45, // altura total da barra (ajuste aqui)
     child: Padding(
       padding: EdgeInsets.symmetric(horizontal: 4.w), // sem padding vertical
       child: Row(
