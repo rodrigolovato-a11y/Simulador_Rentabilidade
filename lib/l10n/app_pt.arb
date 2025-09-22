@@ -68,5 +68,8 @@
   "traditionalLabel": "Padrão Fazenda",
   "effathaLabel": "Effatha",
   "additionalProfitCash": "Lucro Adicional com Effatha (R$)",
-  "additionalProfitPercent": "Lucro Adicional com Effatha (%)"
+  "additionalProfitPercent": "Lucro Adicional com Effatha (%)",
+  "language_es": "Espanhol",
+  "language_fr": "Francês",
+  "language_de": "Alemão"
 }

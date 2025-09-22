@@ -1,5 +1,5 @@
 {
-  "@@locale": "en",
+  "@@locale": "es",
   "appTitle": "Effatha Agro Simulator",
   "email": "Email",
   "password": "Password",
@@ -69,7 +69,7 @@
   "effathaLabel": "Effatha",
   "additionalProfitCash": "Additional Profit with Effatha (cash)",
   "additionalProfitPercent": "Additional Profit with Effatha (%)",
-  "language_es": "Spanish",
+  "language_es": "Español",
   "language_fr": "French",
   "language_de": "German"
 }

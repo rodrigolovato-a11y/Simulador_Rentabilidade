@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:effatha_agro_simulator/l10n/app_localizations.dart';
 
 class ReportTemplateWidget extends StatelessWidget {
   final Map<String, dynamic> traditional;
@@ -20,17 +21,17 @@ class ReportTemplateWidget extends StatelessWidget {
   });
 
   String _fmtMoney(double v) =>
-      NumberFormat.currency(locale: 'pt_BR', symbol: r'$ ', decimalDigits: 2)
+      NumberFormat.currency(locale: Localizations.localeOf(context).toLanguageTag().replaceAll('-', '_'), symbol: r'$ ', decimalDigits: 2)
           .format(v);
 
   String _fmtPercent(double v, {int decimals = 1}) {
     final fixed = double.parse(v.toStringAsFixed(decimals));
-    return '${NumberFormat.decimalPattern('pt_BR').format(fixed)}%';
+    return '${NumberFormat.decimalPattern(Localizations.localeOf(context).toLanguageTag().replaceAll('-', '_')).format(fixed)}%';
   }
 
   String _prodKgToSc(double kg) {
     final sc = kgPerSack > 0 ? kg / kgPerSack : 0;
-    return '${NumberFormat.decimalPattern('pt_BR').format(sc.round())} sc';
+    return '${NumberFormat.decimalPattern(Localizations.localeOf(context).toLanguageTag().replaceAll('-', '_')).format(sc.round())} sc';
   }
 
   @override
@@ -63,17 +64,17 @@ class ReportTemplateWidget extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Resultados',
+            Text(AppLocalizations.of(context)!.resultsTitle,
                 style: theme.textTheme.titleMedium
                     ?.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
 
             // Tabela de duas colunas (igual ao Dashboard/PDF)
-            _row2('Investimento Total (\$)', _fmtMoney(tCosts), _fmtMoney(eCosts)),
-            _row2('Produção Total', _prodKgToSc(tProdKg), _prodKgToSc(eProdKg)),
-            _row2('Faturamento Total (\$)', _fmtMoney(tRevenue), _fmtMoney(eRevenue)),
-            _row2('Rentabilidade Total (\$)', _fmtMoney(tProfit), _fmtMoney(eProfit)),
-            _row2('Rentabilidade Total (%)',
+            _row2(AppLocalizations.of(context)!.totalInvestment,, _fmtMoney(tCosts), _fmtMoney(eCosts)),
+            _row2(AppLocalizations.of(context)!.totalProduction,, _prodKgToSc(tProdKg), _prodKgToSc(eProdKg)),
+            _row2(AppLocalizations.of(context)!.totalRevenue,, _fmtMoney(tRevenue), _fmtMoney(eRevenue)),
+            _row2(AppLocalizations.of(context)!.totalProfit,, _fmtMoney(tProfit), _fmtMoney(eProfit)),
+            _row2(AppLocalizations.of(context)!.totalProfitPercent,,
                 _fmtPercent(tPerc), _fmtPercent(ePerc)),
 
             const SizedBox(height: 12),

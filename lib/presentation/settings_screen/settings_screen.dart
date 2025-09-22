@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../core/app_export.dart';
+import '../../core/localization/locale_controller.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -19,7 +20,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   // Preferências
   String _selectedAreaUnit = 'hectares'; // 'hectares' | 'acres' | 'm²'
-  String _selectedLanguage = 'pt_BR';    // 'pt_BR' | 'en_US'
+  String _selectedLanguage = 'pt_BR';    // 'pt_BR' | 'en_US' | 'es_ES' | 'fr_FR' | 'de_DE'
   double _kgPerSackWeight = 60.0;        // peso padrão de 1 saca (kg)
 
   // ===== Ciclo de vida =====
@@ -35,8 +36,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       setState(() {
         _selectedAreaUnit =
             prefs.getString('selected_area_unit') ?? 'hectares';
-        _selectedLanguage =
-            prefs.getString('selected_language') ?? 'pt_BR';
+        _selectedLanguage = LocaleController.instance.locale.toLanguageTag().replaceAll('-', '_');
         _kgPerSackWeight =
             prefs.getDouble('kg_per_sack_weight') ?? 60.0;
         _isLoading = false;
@@ -52,7 +52,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _savePrefs() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('selected_area_unit', _selectedAreaUnit);
-    await prefs.setString('selected_language', _selectedLanguage);
+    await LocaleController.instance.setLocale(_parseLocaleTag(_selectedLanguage));
+    await prefs.setString('app_locale', _selectedLanguage.replaceAll('_','-'));  // compatibility
     await prefs.setDouble('kg_per_sack_weight', _kgPerSackWeight);
   }
 
@@ -107,60 +108,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
             SizedBox(height: 1.h),
-            DropdownButtonFormField<String>(
-              value: _selectedAreaUnit,
-              onChanged: (value) {
-                setState(() {
-                  _selectedAreaUnit = value ?? 'hectares';
-                });
-              },
-              decoration: InputDecoration(
-                labelText: AppLocalizations.of(context)!.areaUnit,
-                border: const OutlineInputBorder(),
-              ),
-              items: [
-                DropdownMenuItem(
-                  value: 'hectares',
-                  child: Text(AppLocalizations.of(context)!.hectares),
-                ),
-                DropdownMenuItem(
-                  value: 'acres',
-                  child: Text(AppLocalizations.of(context)!.acres),
-                ),
-                DropdownMenuItem(
-                  value: 'm²',
-                  child: Text(AppLocalizations.of(context)!.squareMeters),
-                ),
-              ],
-            ),
-
-            SizedBox(height: 3.h),
-
-            // ===== Idioma =====
-            Text(
-              // Pode criar uma chave específica tipo "languageSettings" se quiser
-              'Idioma',
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            SizedBox(height: 1.h),
+            
             DropdownButtonFormField<String>(
               value: _selectedLanguage,
-              onChanged: (value) {
+              onChanged: (value) async {
+                final code = (value ?? 'pt_BR');
                 setState(() {
-                  _selectedLanguage = value ?? 'pt_BR';
+                  _selectedLanguage = code;
                 });
+                // Aplica a troca de idioma imediatamente
+                await LocaleController.instance.setLocale(_parseLocaleTag(code));
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.setString('app_locale', code.replaceAll('_','-'));
               },
-              decoration: const InputDecoration(
-                labelText: 'Idioma',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.language,
+                border: const OutlineInputBorder(),
               ),
               items: const [
                 DropdownMenuItem(value: 'pt_BR', child: Text('Português (Brasil)')),
                 DropdownMenuItem(value: 'en_US', child: Text('English (US)')),
+                DropdownMenuItem(value: 'es_ES', child: Text('Español')),
+                DropdownMenuItem(value: 'fr_FR', child: Text('Français')),
+                DropdownMenuItem(value: 'de_DE', child: Text('Deutsch')),
               ],
-            ),
+            )
+    ,
 
             SizedBox(height: 3.h),
 

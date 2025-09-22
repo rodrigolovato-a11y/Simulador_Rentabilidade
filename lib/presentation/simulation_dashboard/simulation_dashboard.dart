@@ -84,13 +84,13 @@ class _SimulationDashboardState extends State<SimulationDashboard>
   // Helpers de formatação
   String _fmtMoney(double value) {
     final f =
-        NumberFormat.currency(locale: 'pt_BR', symbol: r'$ ', decimalDigits: 2);
+        NumberFormat.currency(locale: Localizations.localeOf(context).toLanguageTag().replaceAll('-', '_'), symbol: r'$ ', decimalDigits: 2);
     return f.format(value);
   }
 
   String _fmtPercent(double value, {int decimals = 1}) {
     final rounded = double.parse(value.toStringAsFixed(decimals));
-    return '${NumberFormat.decimalPattern('pt_BR').format(rounded)}%';
+    return '${NumberFormat.decimalPattern(Localizations.localeOf(context).toLanguageTag().replaceAll('-', '_')).format(rounded)}%';
   }
 
   String _formatTotalProduction(double totalKg) {
@@ -586,7 +586,12 @@ class _SimulationDashboardState extends State<SimulationDashboard>
     final double tProfit = (_traditionalResults['profit'] as double?) ?? 0.0;
     final double eProfit = (_effathaResults['profit'] as double?) ?? 0.0;
 
-    final double tProdKg =
+        final double tRevenue =
+        (_traditionalResults['revenue'] as double?) ?? 0.0;
+    final double eRevenue =
+        (_effathaResults['revenue'] as double?) ?? 0.0;
+
+final double tProdKg =
         (_traditionalResults['_productionKg'] as double?) ?? 0;
     final double eProdKg =
         (_effathaResults['_productionKg'] as double?) ?? 0;
@@ -610,7 +615,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
 
     String prodToSc(double kg) {
       final sc = _kgPerSackWeight > 0 ? kg / _kgPerSackWeight : 0.0;
-      return '${NumberFormat.decimalPattern('pt_BR').format(sc.round())} sc';
+      return '${NumberFormat.decimalPattern(Localizations.localeOf(context).toLanguageTag().replaceAll('-', '_')).format(sc.round())} sc';
     }
 
     return Container(
@@ -632,7 +637,7 @@ class _SimulationDashboardState extends State<SimulationDashboard>
         children: [
           // Título atualizado
           Text(
-            'Resultados',
+            AppLocalizations.of(context)!.resultsTitle,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -640,25 +645,32 @@ class _SimulationDashboardState extends State<SimulationDashboard>
           SizedBox(height: 1.h),
           _doubleRow(
             context,
-            label: 'Investimento Total',
+            label: AppLocalizations.of(context)!.totalInvestment,
             left: _fmtMoney(tCosts),
             right: _fmtMoney(eCosts),
           ),
           _doubleRow(
             context,
-            label: 'Produção Total',
+            label: AppLocalizations.of(context)!.totalProduction,
             left: prodToSc(tProdKg),
+          _doubleRow(
+            context,
+            label: AppLocalizations.of(context)!.totalRevenue,
+            left: _fmtMoney(tRevenue),
+            right: _fmtMoney(eRevenue),
+          ),
+
             right: prodToSc(eProdKg),
           ),
           _doubleRow(
             context,
-            label: 'Rentabilidade Total (R\$)',
+            label: AppLocalizations.of(context)!.totalProfit,
             left: _fmtMoney(tProfit),
             right: _fmtMoney(eProfit),
           ),
           _doubleRow(
             context,
-            label: 'Rentabilidade Total (%)',
+            label: AppLocalizations.of(context)!.totalProfitPercent,
             left: _traditionalResults['profitabilityPercent'] ?? '0%',
             right: _effathaResults['profitabilityPercent'] ?? '0%',
           ),
