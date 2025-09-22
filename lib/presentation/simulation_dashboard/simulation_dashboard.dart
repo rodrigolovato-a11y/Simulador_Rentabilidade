@@ -356,7 +356,7 @@ floatingActionButton: _tabController.index == 0
             child: Align(
               alignment: Alignment.centerLeft,
               child: EffathaLogoWidget(
-                width: 46.w,
+                width: 38.w,
                 padding: EdgeInsets.zero,
               ),
             ),
@@ -383,15 +383,18 @@ floatingActionButton: _tabController.index == 0
         borderRadius: BorderRadius.circular(12),
       ),
       child: TabBar(
+        height: 36, // <-- altura desejada (ajuste aqui)
         controller: _tabController,
         tabs: [
           Tab(text: loc.dashboard), // i18n
           Tab(text: loc.settings),  // i18n
         ],
+        isScrollable: false,
+        labelPadding: const EdgeInsets.symmetric(horizontal: 8), // menor
+        indicatorWeight: 2, // linha mais fina
         labelColor: Colors.white,
         unselectedLabelColor: Colors.white70,
         indicatorColor: Colors.white,
-        indicatorSize: TabBarIndicatorSize.tab,
         dividerColor: Colors.transparent,
       ),
     );
