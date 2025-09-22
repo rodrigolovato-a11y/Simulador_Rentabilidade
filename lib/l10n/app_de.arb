@@ -90,4 +90,9 @@
   "cropWheat": "Weizen",
   "cropCoffee": "Kaffee",
   "cropOrange": "Orange"
+  "exportReport": "Bericht exportieren",
+  "noDataForExport": "Keine Daten zum Exportieren.",
+  "sharePdf": "PDF teilen",
+  "shareAsPng": "Als PNG teilen",
+  "pngExportFailed": "PNG-Export fehlgeschlagen"
 }
