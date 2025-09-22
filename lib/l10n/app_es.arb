@@ -89,5 +89,10 @@
   "cropSugarcane": "Caña de azúcar",
   "cropWheat": "Trigo",
   "cropCoffee": "Café",
-  "cropOrange": "Naranja"
+  "cropOrange": "Naranja",
+  "exportReport": "Exportar informe",
+  "noDataForExport": "Sin datos para exportar.",
+  "sharePdf": "Compartir PDF",
+  "shareAsPng": "Compartir como PNG",
+  "pngExportFailed": "Error al exportar PNG"
 }
