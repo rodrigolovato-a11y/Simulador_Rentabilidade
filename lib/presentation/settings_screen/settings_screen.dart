@@ -281,7 +281,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onPressed: () {
                     Navigator.pushNamedAndRemoveUntil(
                       context,
-                      '/login-screen',
+                      '/consent-screen',
                       (_) => false,
                     );
                   },
