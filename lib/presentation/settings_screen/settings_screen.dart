@@ -15,12 +15,19 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  Locale _parseLocaleTag(String tag) {
+    final parts = tag.split(RegExp(r'[-_]'));
+    if (parts.isEmpty) return const Locale('en');
+    if (parts.length == 1) return Locale(parts[0]);
+    return Locale(parts[0], parts[1]);
+  }
+
   // Estado
   bool _isLoading = true;
 
   // Preferências
   String _selectedAreaUnit = 'hectares'; // 'hectares' | 'acres' | 'm²'
-  String _selectedLanguage = 'pt_BR';    // 'pt_BR' | 'en_US' | 'es_ES' | 'fr_FR' | 'de_DE'
+  String _selectedLanguage = 'pt_BR';    // 'pt_BR' | 'en_US'
   double _kgPerSackWeight = 60.0;        // peso padrão de 1 saca (kg)
 
   // ===== Ciclo de vida =====
@@ -36,7 +43,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       setState(() {
         _selectedAreaUnit =
             prefs.getString('selected_area_unit') ?? 'hectares';
-        _selectedLanguage = LocaleController.instance.locale.toLanguageTag().replaceAll('-', '_');
+        _selectedLanguage =
+            prefs.getString('selected_language') ?? 'pt_BR';
         _kgPerSackWeight =
             prefs.getDouble('kg_per_sack_weight') ?? 60.0;
         _isLoading = false;
@@ -52,8 +60,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _savePrefs() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('selected_area_unit', _selectedAreaUnit);
-    await LocaleController.instance.setLocale(_parseLocaleTag(_selectedLanguage));
-    await prefs.setString('app_locale', _selectedLanguage.replaceAll('_','-'));  // compatibility
+    await prefs.setString('selected_language', _selectedLanguage);
     await prefs.setDouble('kg_per_sack_weight', _kgPerSackWeight);
   }
 
@@ -108,32 +115,60 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
             SizedBox(height: 1.h),
-            
             DropdownButtonFormField<String>(
-              value: _selectedLanguage,
-              onChanged: (value) async {
-                final code = (value ?? 'pt_BR');
+              value: _selectedAreaUnit,
+              onChanged: (value) {
                 setState(() {
-                  _selectedLanguage = code;
+                  _selectedAreaUnit = value ?? 'hectares';
                 });
-                // Aplica a troca de idioma imediatamente
-                await LocaleController.instance.setLocale(_parseLocaleTag(code));
-                final prefs = await SharedPreferences.getInstance();
-                await prefs.setString('app_locale', code.replaceAll('_','-'));
               },
               decoration: InputDecoration(
-                labelText: AppLocalizations.of(context)!.language,
+                labelText: AppLocalizations.of(context)!.areaUnit,
                 border: const OutlineInputBorder(),
+              ),
+              items: [
+                DropdownMenuItem(
+                  value: 'hectares',
+                  child: Text(AppLocalizations.of(context)!.hectares),
+                ),
+                DropdownMenuItem(
+                  value: 'acres',
+                  child: Text(AppLocalizations.of(context)!.acres),
+                ),
+                DropdownMenuItem(
+                  value: 'm²',
+                  child: Text(AppLocalizations.of(context)!.squareMeters),
+                ),
+              ],
+            ),
+
+            SizedBox(height: 3.h),
+
+            // ===== Idioma =====
+            Text(
+              // Pode criar uma chave específica tipo "languageSettings" se quiser
+              'Idioma',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 1.h),
+            DropdownButtonFormField<String>(
+              value: _selectedLanguage,
+              onChanged: (value) {
+                setState(() {
+                  _selectedLanguage = value ?? 'pt_BR';
+                });
+              },
+              decoration: const InputDecoration(
+                labelText: 'Idioma',
+                border: OutlineInputBorder(),
               ),
               items: const [
                 DropdownMenuItem(value: 'pt_BR', child: Text('Português (Brasil)')),
                 DropdownMenuItem(value: 'en_US', child: Text('English (US)')),
-                DropdownMenuItem(value: 'es_ES', child: Text('Español')),
-                DropdownMenuItem(value: 'fr_FR', child: Text('Français')),
-                DropdownMenuItem(value: 'de_DE', child: Text('Deutsch')),
               ],
-            )
-    ,
+            ),
 
             SizedBox(height: 3.h),
 
