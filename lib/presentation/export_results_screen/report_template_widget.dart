@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:effatha_agro_simulator/l10n/app_localizations.dart';
 
 class ReportTemplateWidget extends StatelessWidget {
   final Map<String, dynamic> traditional;
   final Map<String, dynamic> effatha;
-  final String cropKey;           // agora suportado (compatível com as chamadas)
+  final String cropKey;
   final String areaUnit;
   final String productivityUnit;
 
@@ -17,23 +18,20 @@ class ReportTemplateWidget extends StatelessWidget {
     required this.productivityUnit,
   });
 
-  String _fmtMoney(double v) {
-    final f = NumberFormat.currency(locale: 'pt_BR', symbol: r'R$ ', decimalDigits: 2);
-    return f.format(v);
-  }
-
-  String _fmtPercent(double v, {int decimals = 1}) {
-    final rounded = double.parse(v.toStringAsFixed(decimals));
-    return '${NumberFormat.decimalPattern('pt_BR').format(rounded)}%';
-  }
-
-  String _prodKgToSc(double kg, double kgPerSack) {
-    final sc = kgPerSack > 0 ? kg / kgPerSack : 0.0;
-    return '${NumberFormat.decimalPattern('pt_BR').format(sc.round())} sc';
-  }
-
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
+    // Locale-aware formatters
+    final localeStr = Localizations.localeOf(context).toString();
+    final moneyFmt = NumberFormat.simpleCurrency(locale: localeStr);
+    String fmtMoney(num v) => moneyFmt.format(v);
+    String fmtPercent(num v, {int decimals = 1}) =>
+        '${NumberFormat.decimalPattern(localeStr).format(
+          num.parse(v.toStringAsFixed(decimals)),
+        )}%';
+
+    // Valores brutos
     final double tProfit = (traditional['profit'] as double?) ?? 0.0;
     final double eProfit = (effatha['profit'] as double?) ?? 0.0;
 
@@ -49,16 +47,21 @@ class ReportTemplateWidget extends StatelessWidget {
     final double tPerc = (traditional['_profitabilityRaw'] as double?) ?? 0.0;
     final double ePerc = (effatha['_profitabilityRaw'] as double?) ?? 0.0;
 
-    // Lucro adicional (R$) e em %
+    // Métricas derivadas
     final double diffProfitMoney = eProfit - tProfit;
     final double additionalProfitPercent =
         tProfit.abs() > 0 ? ((eProfit - tProfit) / tProfit) * 100.0 : 0.0;
 
-    // Peso por saca (pode vir nos mapas; senão 60)
+    // Peso por saca (fallback 60)
     final double kgPerSack =
         (effatha['kgPerSack'] as double?) ??
         (traditional['kgPerSack'] as double?) ??
         60.0;
+
+    String prodKgToSc(double kg) {
+      final sc = kgPerSack > 0 ? kg / kgPerSack : 0.0;
+      return '${NumberFormat.decimalPattern(localeStr).format(sc.round())} sc';
+    }
 
     return Container(
       width: double.infinity,
@@ -77,9 +80,9 @@ class ReportTemplateWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Título simples (evita depender de chave i18n incerta)
+          // Título traduzido
           Text(
-            'Resultados',
+            loc.results,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -88,38 +91,43 @@ class ReportTemplateWidget extends StatelessWidget {
 
           _doubleRow(
             context,
-            label: 'Investimento total',
-            left: _fmtMoney(tCosts),
-            right: _fmtMoney(eCosts),
+            label: loc.totalInvestment,
+            left: fmtMoney(tCosts),
+            right: fmtMoney(eCosts),
+            farmStandardLabel: loc.farmStandard,
           ),
           _doubleRow(
             context,
-            label: 'Receita total',
-            left: _fmtMoney(tRevenue),
-            right: _fmtMoney(eRevenue),
+            label: loc.totalRevenue,
+            left: fmtMoney(tRevenue),
+            right: fmtMoney(eRevenue),
+            farmStandardLabel: loc.farmStandard,
           ),
           _doubleRow(
             context,
-            label: 'Produção total',
-            left: _prodKgToSc(tProdKg, kgPerSack),
-            right: _prodKgToSc(eProdKg, kgPerSack),
+            label: loc.totalProduction,
+            left: prodKgToSc(tProdKg),
+            right: prodKgToSc(eProdKg),
+            farmStandardLabel: loc.farmStandard,
           ),
           _doubleRow(
             context,
-            label: 'Lucro total',
-            left: _fmtMoney(tProfit),
-            right: _fmtMoney(eProfit),
+            label: loc.totalProfit,
+            left: fmtMoney(tProfit),
+            right: fmtMoney(eProfit),
+            farmStandardLabel: loc.farmStandard,
           ),
           _doubleRow(
             context,
-            label: 'Rentabilidade (%)',
-            left: _fmtPercent(tPerc),
-            right: _fmtPercent(ePerc),
+            label: loc.totalProfitPercent,
+            left: fmtPercent(tPerc),
+            right: fmtPercent(ePerc),
+            farmStandardLabel: loc.farmStandard,
           ),
 
           const SizedBox(height: 16),
 
-          // Destaques de rentabilidade
+          // Destaques de rentabilidade (traduzidos)
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(14),
@@ -143,16 +151,16 @@ class ReportTemplateWidget extends StatelessWidget {
                 Expanded(
                   child: _highlightTile(
                     context,
-                    title: 'Diferença (R\$)',
-                    value: _fmtMoney(diffProfitMoney),
+                    title: '${loc.difference} (${moneyFmt.currencySymbol})',
+                    value: fmtMoney(diffProfitMoney),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: _highlightTile(
                     context,
-                    title: 'Lucro adicional (%)',
-                    value: _fmtPercent(additionalProfitPercent, decimals: 2),
+                    title: loc.additionalProfitability,
+                    value: fmtPercent(additionalProfitPercent, decimals: 2),
                   ),
                 ),
               ],
@@ -195,18 +203,24 @@ class ReportTemplateWidget extends StatelessWidget {
     );
   }
 
-  Widget _doubleRow(BuildContext context,
-      {required String label, required String left, required String right}) {
+  Widget _doubleRow(
+    BuildContext context, {
+    required String label,
+    required String left,
+    required String right,
+    required String farmStandardLabel,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
+          // Coluna "Padrão Fazenda" traduzida
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '$label (Padrão Fazenda)',
+                  '$label ($farmStandardLabel)',
                   style: Theme.of(context)
                       .textTheme
                       .bodySmall
@@ -218,16 +232,14 @@ class ReportTemplateWidget extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
+          // Coluna "Effatha"
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  '$label (Effatha)',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(color: Colors.black54),
+                const Text(
+                  'Effatha',
+                  style: TextStyle(color: Colors.black54, fontSize: 12),
                 ),
                 const SizedBox(height: 4),
                 Text(right, style: Theme.of(context).textTheme.bodyMedium),
