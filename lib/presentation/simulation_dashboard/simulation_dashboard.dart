@@ -704,7 +704,7 @@ Widget _buildDashboardTab() {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  loc.profitability, // i18n
+                  loc.profitabilityAdditionalEffatha, // i18n
                   style:
                       Theme.of(context).textTheme.titleMedium?.copyWith(
                             color: Colors.white,
