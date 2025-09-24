@@ -99,5 +99,6 @@
   "reportGeneratedAutomatically": "Report generated automatically by the simulator.",
   "valuesCurrencyHint": "Values expressed in",
   "sackWeightKg": "Sack weight (kg)",
-  "reportShareText": "Effatha Simulation Report"
+  "reportShareText": "Effatha Simulation Report",
+  "profitabilityAdditionalEffatha": "Effatha Additional Profitability"
 }
