@@ -127,7 +127,7 @@ class _ExportResultsScreenState extends State<ExportResultsScreen> {
       totalProduction: loc.totalProduction,               // "Produção Total"
       totalProfit: loc.totalProfit,                       // "Lucro Total"
       totalProfitPercent: loc.totalProfitPercent,         // "Rentabilidade Total (%)"
-      profitability: loc.profitability,                   // "Rentabilidade"
+      profitability: loc.profitabilityAdditionalEffatha,  // "Rentabilidade"
       difference: loc.difference,                         // "Diferença"
       additionalProfitability: loc.additionalProfitability, // "Lucro adicional (%)"
       farmStandard: loc.farmStandard,                     // rótulo da coluna esquerda
