@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/services.dart'; // <- trocado: precisamos do SystemChrome
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
@@ -56,6 +56,15 @@ Future<void> _bootstrap() async {
     return true; // tratado
   };
 
+  // Força ícones claros sobre status bar transparente (ajuste se quiser)
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.light, // Android
+    statusBarBrightness: Brightness.dark,      // iOS
+    systemNavigationBarColor: Colors.black,
+    systemNavigationBarIconBrightness: Brightness.light,
+  ));
+
   await LocaleController.instance.loadSavedLocale();
 }
 
@@ -84,17 +93,6 @@ class MyApp extends StatelessWidget {
     final base = ThemeData(useMaterial3: true);
     return base.copyWith(
       colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2E7D32)),
-      textTheme: GoogleFonts.interTextTheme(base.textTheme),
-    );
-  }
-
-  ThemeData _buildDark() {
-    final base = ThemeData.dark(useMaterial3: true);
-    return base.copyWith(
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xFF2E7D32),
-        brightness: Brightness.dark,
-      ),
       textTheme: GoogleFonts.interTextTheme(base.textTheme),
     );
   }
@@ -136,7 +134,6 @@ class MyApp extends StatelessWidget {
     };
 
     final lightTheme = _buildLight();
-    final darkTheme = _buildDark();
 
     return Sizer(
       builder: (context, orientation, deviceType) {
@@ -155,9 +152,12 @@ class MyApp extends StatelessWidget {
           ],
           supportedLocales: AppLocalizations.supportedLocales,
           locale: localeCtrl.locale,
+
+          // >>> TRAVA TOTAL: só usa o tema claro <<<
           theme: lightTheme,
-          darkTheme: darkTheme,
-          themeMode: ThemeMode.system,
+          themeMode: ThemeMode.light,
+          // (Não passamos darkTheme — mesmo que o SO esteja em escuro,
+          //  o app permanecerá com as cores do tema claro.)
 
           // DIAGNÓSTICO: tela mínima para testar rotas/assets
           home: kDiag ? _BootProbe(routes: routes, initialRoute: initial) : null,
@@ -178,6 +178,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// (mantém _BootProbe e _FallbackPage iguais ao seu arquivo)
 class _BootProbe extends StatefulWidget {
   final Map<String, WidgetBuilder> routes;
   final String initialRoute;
